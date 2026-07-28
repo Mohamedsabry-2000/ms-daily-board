@@ -1,5 +1,5 @@
-const CACHE_NAME = 'ms-tasks-v1';
-const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = 'ms-tasks-v2';
+const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png', './logo-header.png'];
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
