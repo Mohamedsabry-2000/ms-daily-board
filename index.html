@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MS | لوحتي اليومية</title>
+<meta name="theme-color" content="#3E6E6E">
+<meta name="description" content="لوحة محمد صبري الشخصية لإدارة المهام والتذكيرات وتطوير الذات">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MS لوحتي">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F3EC;
+    --card:#FFFFFF;
+    --card-soft:#FBF9F4;
+    --border:#E4DFD3;
+    --text:#2B2B26;
+    --text-muted:#78736A;
+    --teal:#3E6E6E;
+    --teal-soft:#7FA8A0;
+    --teal-tint:#E7F0EE;
+    --amber:#D98E4A;
+    --amber-tint:#FBEDDC;
+    --coral:#C1594B;
+    --coral-tint:#F7E4E0;
+    --sage:#7C9473;
+    --sage-tint:#EAF0E6;
+    --gold:#B8923F;
+    --gold-tint:#F3ECDA;
+    --shadow: 0 2px 10px rgba(43,43,38,0.06);
+    --shadow-lift: 0 8px 24px rgba(43,43,38,0.10);
+    --radius: 16px;
+  }
+  html[data-theme="dark"]{
+    --bg:#1B1D1C;
+    --card:#242625;
+    --card-soft:#2B2D2B;
+    --border:#3A3C3A;
+    --text:#EDEAE2;
+    --text-muted:#9A968C;
+    --teal:#6FBFB6;
+    --teal-soft:#3E6E6E;
+    --teal-tint:#233634;
+    --amber:#E5A868;
+    --amber-tint:#3A3020;
+    --coral:#E08370;
+    --coral-tint:#3B2723;
+    --sage:#9BB48F;
+    --sage-tint:#25301F;
+    --gold:#D8B968;
+    --gold-tint:#332B18;
+    --shadow: 0 2px 10px rgba(0,0,0,0.25);
+    --shadow-lift: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Cairo', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    padding:20px;
+    transition: background .2s ease, color .2s ease;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+  .wrap{max-width:1180px; margin:0 auto;}
+
+  /* ===== Header ===== */
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:20px; flex-wrap:wrap;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px 26px;
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+  }
+  .brand{display:flex; align-items:center; gap:16px;}
+  .brand-text h1{font-size:1.5rem; font-weight:800; color:var(--teal); display:flex; align-items:center; gap:8px;}
+  .brand-text .tag{font-size:0.65rem; font-weight:800; background:var(--teal); color:#fff; padding:2px 8px; border-radius:999px; letter-spacing:0.5px;}
+  .brand-text p{font-size:0.85rem; color:var(--text-muted); margin-top:2px;}
+  .header-actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+
+  .btn{
+    font-family:inherit; font-size:0.85rem; font-weight:600;
+    border:1px solid var(--border); background:var(--card-soft);
+    color:var(--text); padding:9px 16px; border-radius:10px;
+    cursor:pointer; transition:transform .12s ease, background .15s ease, box-shadow .15s ease;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn:hover{background:var(--card); box-shadow:var(--shadow);}
+  .btn:active{transform:scale(0.97);}
+  .btn:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
+  .btn-primary{background:var(--teal); color:#fff; border-color:var(--teal);}
+  .btn-primary:hover{background:#345c5c;}
+  .btn-ghost{background:transparent; border-color:transparent; color:var(--text-muted);}
+  .btn-ghost:hover{background:var(--card-soft); color:var(--text);}
+  .btn-whatsapp{background:#25D366; color:#fff; border-color:#25D366;}
+  .btn-whatsapp:hover{background:#1fb959;}
+  input[type="file"]{display:none;}
+
+  /* ===== Gauge ===== */
+  .gauge-box{display:flex; align-items:center; gap:14px;}
+  .gauge-label{text-align:right;}
+  .gauge-label .pct{font-size:1.4rem; font-weight:800; color:var(--teal);}
+  .gauge-label .cap{font-size:0.75rem; color:var(--text-muted);}
+  .streak{font-size:0.7rem; font-weight:700; color:var(--gold); margin-top:2px; display:flex; align-items:center; gap:4px;}
+
+  /* ===== Pinned note ===== */
+  .pinned{
+    background:var(--gold-tint); border:1px solid var(--gold); border-radius:var(--radius);
+    padding:14px 18px; margin-bottom:20px; box-shadow:var(--shadow);
+    display:flex; gap:12px; align-items:flex-start;
+  }
+  .pinned .pin-icon{font-size:1.3rem; margin-top:2px;}
+  .pinned .pin-body{flex:1;}
+  .pinned label{font-size:0.75rem; font-weight:800; color:var(--gold); display:block; margin-bottom:6px;}
+  .pinned textarea{
+    width:100%; border:none; background:transparent; resize:none; font-family:inherit;
+    font-size:0.92rem; color:var(--text); line-height:1.6; min-height:24px; outline:none;
+  }
+  .pinned textarea::placeholder{color:var(--text-muted);}
+  .pin-status{font-size:0.68rem; color:var(--text-muted); margin-top:4px; min-height:14px;}
+
+  /* ===== Quote strip ===== */
+  .quote-strip{
+    text-align:center; font-size:0.82rem; color:var(--text-muted); margin-bottom:20px;
+    font-style:normal; padding:0 10px;
+  }
+  .quote-strip strong{color:var(--teal); font-style:normal;}
+
+  /* ===== Toolbar (search/filters) ===== */
+  .toolbar{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px;
+  }
+  .search-box{
+    flex:1; min-width:180px; position:relative;
+  }
+  .search-box input{
+    width:100%; font-family:inherit; font-size:0.88rem; padding:9px 14px 9px 34px;
+    border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--text);
+  }
+  .search-box input:focus{outline:2px solid var(--teal-soft);}
+  .search-box .kbd{
+    position:absolute; left:8px; top:50%; transform:translateY(-50%);
+    font-size:0.65rem; color:var(--text-muted); border:1px solid var(--border); border-radius:5px; padding:1px 5px;
+    background:var(--card-soft);
+  }
+  .filter-pills{display:flex; gap:6px; flex-wrap:wrap;}
+  .filter-pill{
+    font-family:inherit; font-size:0.78rem; font-weight:600; padding:7px 13px; border-radius:999px;
+    border:1px solid var(--border); background:var(--card); color:var(--text-muted); cursor:pointer;
+  }
+  .filter-pill.active{background:var(--teal); color:#fff; border-color:var(--teal);}
+
+  /* ===== Add task bar ===== */
+  .add-bar{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px 22px; margin-bottom:24px; box-shadow:var(--shadow);
+  }
+  .add-bar h2{font-size:1rem; font-weight:700; margin-bottom:14px; color:var(--teal);}
+  .add-grid{
+    display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:10px; align-items:end;
+  }
+  .field label{display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:5px; font-weight:600;}
+  .field input, .field select{
+    width:100%; font-family:inherit; font-size:0.9rem;
+    border:1px solid var(--border); border-radius:10px; padding:9px 11px;
+    background:var(--card-soft); color:var(--text);
+  }
+  .field input:focus, .field select:focus{outline:2px solid var(--teal-soft); outline-offset:1px; background:var(--card);}
+  .note-row{margin-top:10px;}
+  @media (max-width:900px){ .add-grid{grid-template-columns:1fr 1fr;} }
+
+  /* ===== Board ===== */
+  .board{display:grid; grid-template-columns:repeat(3, 1fr); gap:18px;}
+  @media (max-width:900px){ .board{grid-template-columns:1fr;} }
+
+  .column{
+    background:var(--card-soft); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px; min-height:180px;
+  }
+  .col-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding:0 4px;}
+  .col-head h3{font-size:0.95rem; font-weight:700;}
+  .col-count{
+    font-size:0.75rem; font-weight:700; background:var(--teal-tint); color:var(--teal);
+    padding:2px 10px; border-radius:999px;
+  }
+  .col-daily .col-count{background:var(--teal-tint); color:var(--teal);}
+  .col-near .col-count{background:var(--amber-tint); color:var(--amber);}
+  .col-far .col-count{background:var(--sage-tint); color:var(--sage);}
+
+  .empty-state{
+    text-align:center; color:var(--text-muted); font-size:0.85rem;
+    padding:30px 10px; border:1px dashed var(--border); border-radius:12px;
+  }
+
+  .task{
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:12px 14px; margin-bottom:10px; box-shadow:var(--shadow);
+    border-right:4px solid var(--teal-soft);
+    transition: box-shadow .15s ease, opacity .15s ease;
+  }
+  .task:hover{box-shadow:var(--shadow-lift);}
+  .task.done{opacity:0.55;}
+  .task.done .task-title{text-decoration:line-through;}
+  .task.overdue{border-right-color:var(--coral);}
+  .task.priority-high:not(.overdue){border-right-color:var(--amber);}
+  .task.priority-low{border-right-color:var(--sage-tint);}
+
+  .task-top{display:flex; align-items:flex-start; gap:10px;}
+  .task-check{margin-top:3px; width:18px; height:18px; accent-color:var(--teal); cursor:pointer; flex-shrink:0;}
+  .task-title{font-weight:700; font-size:0.92rem; flex:1; word-break:break-word;}
+  .task-note{font-size:0.78rem; color:var(--text-muted); margin-top:4px; margin-right:28px;}
+  .task-meta{display:flex; align-items:center; gap:8px; margin-top:8px; margin-right:28px; flex-wrap:wrap;}
+  .badge{font-size:0.72rem; font-weight:700; padding:2px 9px; border-radius:999px;}
+  .badge-date{background:var(--teal-tint); color:var(--teal);}
+  .badge-overdue{background:var(--coral-tint); color:var(--coral);}
+  .badge-today{background:var(--amber-tint); color:var(--amber);}
+  .badge-high{background:var(--amber-tint); color:var(--amber);}
+  .task-actions{display:flex; gap:6px; margin-right:auto;}
+  .icon-btn{
+    background:transparent; border:none; cursor:pointer; font-size:0.85rem;
+    color:var(--text-muted); padding:2px 5px; border-radius:6px;
+  }
+  .icon-btn:hover{background:var(--card-soft); color:var(--text);}
+
+  /* ===== Shortcuts popover ===== */
+  .shortcuts-pop{
+    position:fixed; bottom:70px; left:20px; background:var(--card); border:1px solid var(--border);
+    border-radius:12px; box-shadow:var(--shadow-lift); padding:14px 18px; font-size:0.78rem;
+    max-width:260px; z-index:60; display:none;
+  }
+  .shortcuts-pop.show{display:block;}
+  .shortcuts-pop h4{font-size:0.82rem; margin-bottom:8px; color:var(--teal);}
+  .shortcuts-pop ul{list-style:none;}
+  .shortcuts-pop li{display:flex; justify-content:space-between; gap:10px; margin-bottom:5px; color:var(--text-muted);}
+  .shortcuts-pop kbd{background:var(--card-soft); border:1px solid var(--border); border-radius:5px; padding:1px 6px; font-family:inherit; color:var(--text);}
+
+  /* ===== Toast ===== */
+  #toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--teal); color:#fff; padding:12px 22px; border-radius:12px;
+    font-size:0.85rem; font-weight:600; box-shadow:var(--shadow-lift);
+    opacity:0; pointer-events:none; transition:all .25s ease; z-index:50; max-width:90vw; text-align:center;
+  }
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  footer{text-align:center; color:var(--text-muted); font-size:0.75rem; margin-top:30px; padding-bottom:10px;}
+  footer button{background:none; border:none; color:var(--teal); font-weight:700; cursor:pointer; font-family:inherit; font-size:0.75rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <svg id="gaugeSvg" width="64" height="64" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#E4DFD3" stroke-width="10"/>
+        <circle id="gaugeArc" cx="50" cy="50" r="42" fill="none" stroke="#3E6E6E" stroke-width="10"
+                stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
+                transform="rotate(-90 50 50)" style="transition: stroke-dashoffset .6s ease, stroke .3s ease;"/>
+        <text id="gaugeText" x="50" y="56" text-anchor="middle" font-size="22" font-weight="800" fill="#2B2B26" font-family="Cairo">0%</text>
+      </svg>
+      <div class="brand-text">
+        <h1>لوحتي اليومية <span class="tag">MS</span></h1>
+        <p id="todayLabel">—</p>
+        <div class="streak" id="streakLabel"></div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="themeBtn" title="الوضع الليلي">🌙</button>
+      <button class="btn" id="installBtn" style="display:none;">📲 تثبيت التطبيق</button>
+      <button class="btn" id="notifyBtn">🔔 فعّل التذكيرات</button>
+      <button class="btn btn-whatsapp" id="whatsappBtn">📤 ابعت المهم لواتساب</button>
+      <button class="btn" id="exportBtn">⬇️ نسخة احتياطية</button>
+      <button class="btn" id="importBtn">⬆️ استرجاع نسخة</button>
+      <input type="file" id="importFile" accept="application/json">
+    </div>
+  </header>
+
+  <div class="pinned">
+    <div class="pin-icon">📌</div>
+    <div class="pin-body">
+      <label for="pinnedNote">تذكرة ثابتة — دايمًا قدام عينيك</label>
+      <textarea id="pinnedNote" rows="1" placeholder="اكتب هنا أي حاجة عايز تفضل واخدها بالك... (بتتحفظ أوتوماتيك)"></textarea>
+      <div class="pin-status" id="pinStatus"></div>
+    </div>
+  </div>
+
+  <div class="quote-strip" id="quoteStrip"></div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <input id="searchInput" type="text" placeholder="دور في مهامك... ( / للتركيز هنا)">
+      <span class="kbd">/</span>
+    </div>
+    <div class="filter-pills" id="filterPills">
+      <button class="filter-pill active" data-filter="all">الكل</button>
+      <button class="filter-pill" data-filter="today">اليوم</button>
+      <button class="filter-pill" data-filter="overdue">متأخر</button>
+      <button class="filter-pill" data-filter="high">أولوية عالية</button>
+      <button class="filter-pill" data-filter="done">منجز</button>
+    </div>
+  </div>
+
+  <div class="add-bar">
+    <h2 id="formTitle">➕ إضافة مهمة جديدة</h2>
+    <div class="add-grid">
+      <div class="field">
+        <label for="taskTitle">عنوان المهمة</label>
+        <input id="taskTitle" type="text" placeholder="مثال: متابعة عرض سعر عميل...">
+      </div>
+      <div class="field">
+        <label for="taskDate">التاريخ (اختياري)</label>
+        <input id="taskDate" type="date">
+      </div>
+      <div class="field">
+        <label for="taskTime">الوقت (اختياري)</label>
+        <input id="taskTime" type="time">
+      </div>
+      <div class="field">
+        <label for="taskPriority">الأولوية</label>
+        <select id="taskPriority">
+          <option value="medium">متوسطة</option>
+          <option value="high">عالية</option>
+          <option value="low">منخفضة</option>
+        </select>
+      </div>
+      <div class="field">
+        <button class="btn btn-primary" id="saveBtn" style="width:100%; justify-content:center;">حفظ</button>
+      </div>
+    </div>
+    <div class="field note-row">
+      <label for="taskNote">ملاحظة (اختياري)</label>
+      <input id="taskNote" type="text" placeholder="تفاصيل إضافية...">
+    </div>
+    <div id="editRow" style="margin-top:10px; display:none;">
+      <button class="btn btn-ghost" id="cancelEditBtn">إلغاء التعديل</button>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="column col-daily">
+      <div class="col-head"><h3>🔁 مهام يومية</h3><span class="col-count" id="countDaily">0</span></div>
+      <div id="colDaily"></div>
+    </div>
+    <div class="column col-near">
+      <div class="col-head"><h3>⏳ مواعيد قريبة</h3><span class="col-count" id="countNear">0</span></div>
+      <div id="colNear"></div>
+    </div>
+    <div class="column col-far">
+      <div class="col-head"><h3>📅 مواعيد بعيدة</h3><span class="col-count" id="countFar">0</span></div>
+      <div id="colFar"></div>
+    </div>
+  </div>
+
+  <footer>
+    البيانات محفوظة محليًا على هذا الجهاز — خذ نسخة احتياطية بشكل دوري ولو بتستخدمها من أكتر من جهاز.
+    <br><button id="shortcutsToggle">⌨️ الاختصارات المتاحة</button>
+  </footer>
+</div>
+
+<div class="shortcuts-pop" id="shortcutsPop">
+  <h4>اختصارات لوحة المفاتيح</h4>
+  <ul>
+    <li><span>تركيز على البحث</span><kbd>/</kbd></li>
+    <li><span>حفظ المهمة من أي حقل</span><kbd>Ctrl + Enter</kbd></li>
+    <li><span>إلغاء التعديل / إغلاق</span><kbd>Esc</kbd></li>
+  </ul>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============ DB LAYER (IndexedDB) ============ */
+const DB_NAME = 'noorTasksDB';
+const STORE = 'tasks';
+let db;
+
+function openDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = (e)=>{
+      const d = e.target.result;
+      if(!d.objectStoreNames.contains(STORE)){
+        d.createObjectStore(STORE, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = (e)=>{ db = e.target.result; resolve(db); };
+    req.onerror = (e)=> reject(e);
+  });
+}
+
+function tx(mode){ return db.transaction(STORE, mode).objectStore(STORE); }
+
+function dbGetAll(){
+  return new Promise((resolve, reject)=>{
+    const req = tx('readonly').getAll();
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = (e)=> reject(e);
+  });
+}
+function dbPut(task){
+  return new Promise((resolve, reject)=>{
+    const req = tx('readwrite').put(task);
+    req.onsuccess = ()=> resolve();
+    req.onerror = (e)=> reject(e);
+  });
+}
+function dbDelete(id){
+  return new Promise((resolve, reject)=>{
+    const req = tx('readwrite').delete(id);
+    req.onsuccess = ()=> resolve();
+    req.onerror = (e)=> reject(e);
+  });
+}
+
+/* ============ CONFIG ============ */
+// رقم الواتساب اللي هيتبعتله زرار "ابعت المهم لواتساب" (بالكود الدولي بدون +)
+const WHATSAPP_NUMBER = '201022179431';
+
+const QUOTES = [
+  'الانضباط هو الجسر بين الهدف وتحقيقه.',
+  'مش شرط تكون سريع، بس متوقفش.',
+  'كل مهمة بتخلصها النهارده استثمار في نسخة أحسن منك بكرة.',
+  'الاتساق بيهزم الحماس كل مرة.',
+  'ابدأ بأصغر خطوة ممكنة، المهم تتحرك.',
+  'اللي بتكتبه دلوقتي هو اللي هتنجزه بعدين — اكتب بوضوح.',
+  'يوم منظم بيساوي أسبوع مرتاح.',
+  'راجع يومك قبل ما ينام — عشان تصحى وانت عارف هتعمل إيه.'
+];
+
+/* ============ STATE ============ */
+let editingId = null;
+let currentFilter = 'all';
+let searchQuery = '';
+
+function uid(){ return 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2,8); }
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function daysDiff(dateStr){
+  const today = new Date(todayStr()+'T00:00:00');
+  const target = new Date(dateStr+'T00:00:00');
+  return Math.round((target - today) / 86400000);
+}
+
+/* ============ RENDER ============ */
+async function render(){
+  const all = await dbGetAll();
+  let tasks = all.slice();
+
+  // فلترة حسب البحث
+  if(searchQuery){
+    const q = searchQuery.toLowerCase();
+    tasks = tasks.filter(t => t.title.toLowerCase().includes(q) || (t.note||'').toLowerCase().includes(q));
+  }
+
+  // فلترة حسب الأزرار
+  if(currentFilter === 'today'){
+    tasks = tasks.filter(t => t.dueDate === todayStr());
+  } else if(currentFilter === 'overdue'){
+    tasks = tasks.filter(t => t.dueDate && !t.done && daysDiff(t.dueDate) < 0);
+  } else if(currentFilter === 'high'){
+    tasks = tasks.filter(t => t.priority === 'high');
+  } else if(currentFilter === 'done'){
+    tasks = tasks.filter(t => t.done);
+  }
+
+  tasks.sort((a,b)=>{
+    if(!!a.dueDate !== !!b.dueDate) return a.dueDate ? -1 : 1;
+    if(a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate) || (a.dueTime||'').localeCompare(b.dueTime||'');
+    return b.createdAt - a.createdAt;
+  });
+
+  const daily = [], near = [], far = [];
+  tasks.forEach(t=>{
+    if(!t.dueDate){ daily.push(t); return; }
+    const diff = daysDiff(t.dueDate);
+    if(diff <= 7) near.push(t); else far.push(t);
+  });
+  near.sort((a,b)=>{
+    const aOver = !a.done && daysDiff(a.dueDate) < 0;
+    const bOver = !b.done && daysDiff(b.dueDate) < 0;
+    if(aOver !== bOver) return aOver ? -1 : 1;
+    return 0;
+  });
+
+  document.getElementById('countDaily').textContent = daily.length;
+  document.getElementById('countNear').textContent = near.length;
+  document.getElementById('countFar').textContent = far.length;
+
+  renderColumn('colDaily', daily, 'لا توجد مهام يومية بعد — أضف أول مهمة لك 👆');
+  renderColumn('colNear', near, 'لا توجد مواعيد قريبة');
+  renderColumn('colFar', far, 'لا توجد مواعيد بعيدة');
+
+  updateGauge(all);
+  updateStreak(all);
+  checkReminders(all);
+}
+
+function renderColumn(elId, list, emptyMsg){
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  if(list.length === 0){
+    el.innerHTML = `<div class="empty-state">${emptyMsg}</div>`;
+    return;
+  }
+  list.forEach(t=> el.appendChild(taskCard(t)));
+}
+
+function taskCard(t){
+  const div = document.createElement('div');
+  const diff = t.dueDate ? daysDiff(t.dueDate) : null;
+  const isOverdue = t.dueDate && !t.done && diff < 0;
+  div.className = 'task priority-' + t.priority + (t.done ? ' done' : '') + (isOverdue ? ' overdue' : '');
+
+  let badge = '';
+  if(t.dueDate){
+    let label = t.dueDate + (t.dueTime ? ' • ' + t.dueTime : '');
+    let cls = 'badge-date';
+    if(isOverdue){ label = 'متأخر ' + Math.abs(diff) + ' يوم'; cls = 'badge-overdue'; }
+    else if(diff === 0){ label = 'اليوم' + (t.dueTime ? ' • ' + t.dueTime : ''); cls = 'badge-today'; }
+    else if(diff === 1){ label = 'غدًا'; cls = 'badge-today'; }
+    else if(diff > 1){ label = 'بعد ' + diff + ' يوم'; }
+    badge = `<span class="badge ${cls}">${label}</span>`;
+  }
+  const highBadge = t.priority === 'high' ? `<span class="badge badge-high">أولوية عالية</span>` : '';
+
+  div.innerHTML = `
+    <div class="task-top">
+      <input type="checkbox" class="task-check" ${t.done ? 'checked' : ''} aria-label="إنجاز المهمة">
+      <div style="flex:1;">
+        <div class="task-title">${escapeHtml(t.title)}</div>
+        ${t.note ? `<div class="task-note">${escapeHtml(t.note)}</div>` : ''}
+        <div class="task-meta">
+          ${badge}
+          ${highBadge}
+          <div class="task-actions">
+            <button class="icon-btn editBtn" title="تعديل">✏️</button>
+            <button class="icon-btn delBtn" title="حذف">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  div.querySelector('.task-check').addEventListener('change', async (e)=>{
+    t.done = e.target.checked;
+    await dbPut(t);
+    render();
+  });
+  div.querySelector('.delBtn').addEventListener('click', async ()=>{
+    if(confirm('حذف هذه المهمة؟')){
+      await dbDelete(t.id);
+      render();
+    }
+  });
+  div.querySelector('.editBtn').addEventListener('click', ()=> startEdit(t));
+
+  return div;
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/* ============ GAUGE ============ */
+function updateGauge(tasks){
+  const todayTasks = tasks.filter(t => !t.dueDate || t.dueDate === todayStr());
+  const total = todayTasks.length;
+  const done = todayTasks.filter(t=>t.done).length;
+  const pct = total === 0 ? 100 : Math.round((done/total)*100);
+
+  const circumference = 264;
+  const offset = circumference - (circumference * pct / 100);
+  const arc = document.getElementById('gaugeArc');
+  arc.style.strokeDashoffset = offset;
+  arc.style.stroke = pct >= 100 ? 'var(--sage)' : pct >= 50 ? 'var(--teal)' : 'var(--amber)';
+  document.getElementById('gaugeText').textContent = pct + '%';
+  return pct;
+}
+
+/* ============ STREAK (لتحفيز تطوير الذات) ============ */
+function updateStreak(tasks){
+  const el = document.getElementById('streakLabel');
+  const today = todayStr();
+  const todayTasks = tasks.filter(t => !t.dueDate || t.dueDate === today);
+  const todayComplete = todayTasks.length > 0 && todayTasks.every(t => t.done);
+
+  let streak = parseInt(localStorage.getItem('msStreak') || '0', 10);
+  let lastDay = localStorage.getItem('msStreakDay') || '';
+
+  if(todayComplete && lastDay !== today){
+    const y = new Date(); y.setDate(y.getDate()-1);
+    const yStr = y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
+    streak = (lastDay === yStr) ? streak + 1 : 1;
+    localStorage.setItem('msStreak', streak);
+    localStorage.setItem('msStreakDay', today);
+  }
+
+  if(streak > 0){
+    el.textContent = `🔥 سلسلة إنجاز ${streak} يوم`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+/* ============ FORM ============ */
+document.getElementById('saveBtn').addEventListener('click', saveTask);
+
+async function saveTask(){
+  const title = document.getElementById('taskTitle').value.trim();
+  if(!title){ showToast('اكتب عنوان المهمة أولاً'); return; }
+
+  const task = {
+    id: editingId || uid(),
+    title,
+    note: document.getElementById('taskNote').value.trim(),
+    dueDate: document.getElementById('taskDate').value || null,
+    dueTime: document.getElementById('taskTime').value || null,
+    priority: document.getElementById('taskPriority').value,
+    done: false,
+    createdAt: Date.now(),
+    lastNotified: null
+  };
+
+  if(editingId){
+    const existing = (await dbGetAll()).find(t=>t.id===editingId);
+    task.done = existing ? existing.done : false;
+    task.createdAt = existing ? existing.createdAt : Date.now();
+  }
+
+  await dbPut(task);
+  resetForm();
+  render();
+  showToast(editingId ? 'تم تحديث المهمة ✓' : 'تمت إضافة المهمة ✓');
+}
+
+function startEdit(t){
+  editingId = t.id;
+  document.getElementById('taskTitle').value = t.title;
+  document.getElementById('taskNote').value = t.note || '';
+  document.getElementById('taskDate').value = t.dueDate || '';
+  document.getElementById('taskTime').value = t.dueTime || '';
+  document.getElementById('taskPriority').value = t.priority;
+  document.getElementById('formTitle').textContent = '✏️ تعديل المهمة';
+  document.getElementById('editRow').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
+
+function resetForm(){
+  editingId = null;
+  document.getElementById('taskTitle').value = '';
+  document.getElementById('taskNote').value = '';
+  document.getElementById('taskDate').value = '';
+  document.getElementById('taskTime').value = '';
+  document.getElementById('taskPriority').value = 'medium';
+  document.getElementById('formTitle').textContent = '➕ إضافة مهمة جديدة';
+  document.getElementById('editRow').style.display = 'none';
+}
+
+/* ============ SEARCH / FILTERS ============ */
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', (e)=>{
+  searchQuery = e.target.value.trim();
+  render();
+});
+
+document.getElementById('filterPills').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.filter-pill');
+  if(!btn) return;
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  render();
+});
+
+/* ============ KEYBOARD SHORTCUTS ============ */
+document.addEventListener('keydown', (e)=>{
+  const tag = (e.target.tagName || '').toLowerCase();
+  const typing = tag === 'input' || tag === 'textarea' || tag === 'select';
+
+  if(e.key === '/' && !typing){
+    e.preventDefault();
+    searchInput.focus();
+  } else if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+    if(tag === 'input' || tag === 'textarea'){
+      if(e.target.id !== 'pinnedNote' && e.target.id !== 'searchInput'){
+        e.preventDefault();
+        saveTask();
+      }
+    }
+  } else if(e.key === 'Escape'){
+    if(editingId) resetForm();
+    document.getElementById('shortcutsPop').classList.remove('show');
+  }
+});
+
+document.getElementById('shortcutsToggle').addEventListener('click', ()=>{
+  document.getElementById('shortcutsPop').classList.toggle('show');
+});
+
+/* ============ PINNED NOTE (تذكرة ثابتة) ============ */
+const pinnedNoteEl = document.getElementById('pinnedNote');
+const pinStatusEl = document.getElementById('pinStatus');
+let pinTimer;
+
+pinnedNoteEl.value = localStorage.getItem('msPinnedNote') || '';
+autoResize(pinnedNoteEl);
+
+pinnedNoteEl.addEventListener('input', ()=>{
+  autoResize(pinnedNoteEl);
+  pinStatusEl.textContent = 'بيتحفظ...';
+  clearTimeout(pinTimer);
+  pinTimer = setTimeout(()=>{
+    localStorage.setItem('msPinnedNote', pinnedNoteEl.value);
+    pinStatusEl.textContent = 'اتحفظ ✓';
+    setTimeout(()=> pinStatusEl.textContent = '', 1500);
+  }, 500);
+});
+
+function autoResize(ta){
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+}
+
+/* ============ QUOTE OF THE DAY ============ */
+(function setQuote(){
+  const dayIndex = Math.floor(Date.now() / 86400000);
+  const q = QUOTES[dayIndex % QUOTES.length];
+  document.getElementById('quoteStrip').innerHTML = `💡 <strong>فكرة اليوم:</strong> ${q}`;
+})();
+
+/* ============ DARK MODE ============ */
+const themeBtn = document.getElementById('themeBtn');
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('msTheme', theme);
+}
+applyTheme(localStorage.getItem('msTheme') || 'light');
+themeBtn.addEventListener('click', ()=>{
+  const current = document.documentElement.getAttribute('data-theme');
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+/* ============ WHATSAPP EXPORT ============ */
+document.getElementById('whatsappBtn').addEventListener('click', async ()=>{
+  const tasks = await dbGetAll();
+  const today = todayStr();
+  const important = tasks.filter(t =>
+    !t.done && (
+      t.priority === 'high' ||
+      (t.dueDate && daysDiff(t.dueDate) <= 0) // اليوم أو متأخر
+    )
+  );
+
+  if(important.length === 0){
+    showToast('مفيش مهام مهمة أو متأخرة دلوقتي 👍');
+    return;
+  }
+
+  important.sort((a,b)=>{
+    const aOver = a.dueDate && daysDiff(a.dueDate) < 0;
+    const bOver = b.dueDate && daysDiff(b.dueDate) < 0;
+    if(aOver !== bOver) return aOver ? -1 : 1;
+    return 0;
+  });
+
+  let msg = `📋 *أهم مهامي - ${today}*\n\n`;
+  important.forEach(t=>{
+    let line = '• ' + t.title;
+    if(t.dueDate){
+      const diff = daysDiff(t.dueDate);
+      if(diff < 0) line += ` (متأخر ${Math.abs(diff)} يوم)`;
+      else if(diff === 0) line += ' (اليوم)';
+    }
+    if(t.priority === 'high') line += ' ⚡';
+    msg += line + '\n';
+  });
+  msg += `\nمُرسَل من لوحتي الشخصية — MS`;
+
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+});
+
+/* ============ REMINDERS ============ */
+document.getElementById('notifyBtn').addEventListener('click', async ()=>{
+  if(!('Notification' in window)){ showToast('المتصفح لا يدعم التنبيهات'); return; }
+  const perm = await Notification.requestPermission();
+  showToast(perm === 'granted' ? 'تم تفعيل التذكيرات 🔔' : 'لم يتم منح الإذن');
+});
+
+async function notifyUser(title, body, tag){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  // نستخدم الـ service worker لعرض الإشعار لأن هذا هو الأسلوب الموثوق على أندرويد/كروم
+  if('serviceWorker' in navigator){
+    const reg = await navigator.serviceWorker.ready.catch(()=>null);
+    if(reg){
+      reg.active && reg.active.postMessage({ type:'SHOW_NOTIFICATION', payload:{ title, body, tag } });
+      return;
+    }
+  }
+  try{ new Notification(title, { body, tag }); }catch(e){ /* بعض الأجهزة لا تدعم هذا المسار */ }
+}
+
+async function checkReminders(tasks){
+  const today = todayStr();
+  const due = tasks.filter(t => !t.done && t.dueDate && t.dueDate === today && t.lastNotified !== today);
+  if(due.length === 0) return;
+
+  showToast(`لديك ${due.length} مهمة مستحقة اليوم`);
+  notifyUser('تذكير من لوحتك', `لديك ${due.length} مهمة مستحقة اليوم`, 'ms-daily-due');
+
+  for(const t of due){
+    t.lastNotified = today;
+    await dbPut(t);
+  }
+}
+
+/* ============ BACKUP / RESTORE ============ */
+document.getElementById('exportBtn').addEventListener('click', async ()=>{
+  const tasks = await dbGetAll();
+  const payload = {
+    tasks,
+    pinnedNote: localStorage.getItem('msPinnedNote') || '',
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'MS-نسخة-احتياطية-' + todayStr() + '.json';
+  a.click();
+  showToast('تم تنزيل النسخة الاحتياطية');
+});
+
+document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (evt)=>{
+    try{
+      const parsed = JSON.parse(evt.target.result);
+      // يدعم صيغة الملف القديمة (مصفوفة مباشرة) والجديدة (كائن فيه tasks)
+      const tasksArr = Array.isArray(parsed) ? parsed : parsed.tasks;
+      if(!Array.isArray(tasksArr)) throw new Error('bad format');
+      for(const t of tasksArr){ await dbPut(t); }
+      if(!Array.isArray(parsed) && typeof parsed.pinnedNote === 'string'){
+        localStorage.setItem('msPinnedNote', parsed.pinnedNote);
+        pinnedNoteEl.value = parsed.pinnedNote;
+        autoResize(pinnedNoteEl);
+      }
+      render();
+      showToast('تم استرجاع النسخة الاحتياطية ✓');
+    }catch(err){
+      showToast('الملف غير صالح');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* ============ TOAST ============ */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 3500);
+}
+
+/* ============ PWA: INSTALL + SERVICE WORKER ============ */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'inline-flex';
+});
+document.getElementById('installBtn').addEventListener('click', async ()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBtn').style.display = 'none';
+});
+window.addEventListener('appinstalled', ()=>{
+  showToast('تم تثبيت التطبيق على جهازك ✓');
+  document.getElementById('installBtn').style.display = 'none';
+});
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{ /* غير متاح مثلاً عند فتح الملف مباشرة بدون سيرفر */ });
+  });
+}
+
+/* ============ INIT ============ */
+function setTodayLabel(){
+  const d = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  document.getElementById('todayLabel').textContent = d.toLocaleDateString('ar-EG', opts);
+}
+
+(async function init(){
+  setTodayLabel();
+  await openDB();
+  render();
+  setInterval(async ()=>{ render(); }, 60000); // recheck كل دقيقة للتذكيرات والعد التنازلي
+})();
+</script>
+</body>
+</html>
