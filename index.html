@@ -6,6 +6,9 @@
 <title>MS | لوحتي اليومية</title>
 <meta name="theme-color" content="#3E6E6E">
 <meta name="description" content="لوحة محمد صبري الشخصية لإدارة المهام والتذكيرات وتطوير الذات">
+<meta name="author" content="Mohamed Sabry - MS Strategy & Growth">
+<meta name="copyright" content="© Mohamed Sabry - MS Strategy & Growth">
+<meta property="og:site_name" content="MS Strategy & Growth">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -88,7 +91,19 @@
   .brand-text h1{font-size:1.5rem; font-weight:800; color:var(--teal); display:flex; align-items:center; gap:8px;}
   .brand-text .tag{font-size:0.65rem; font-weight:800; background:var(--teal); color:#fff; padding:2px 8px; border-radius:999px; letter-spacing:0.5px;}
   .brand-text p{font-size:0.85rem; color:var(--text-muted); margin-top:2px;}
-  .header-actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  .header-actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center; position:relative;}
+  .secondary-actions{display:contents;}
+  .more-toggle{display:none;}
+
+  .wa-number-field{display:flex; align-items:center; gap:6px;}
+  .wa-number-field label{font-size:0.78rem; font-weight:600; color:var(--text-muted); white-space:nowrap;}
+  .wa-number-field input{
+    width:150px; font-family:inherit; font-size:0.85rem; padding:8px 10px;
+    border:1px solid var(--border); border-radius:8px; background:var(--card-soft); color:var(--text);
+    direction:ltr; text-align:right;
+  }
+  .wa-number-field input:focus{outline:2px solid var(--teal-soft);}
+  .wa-hint{display:none; font-size:0.65rem; color:var(--text-muted); margin-top:4px;}
 
   .btn{
     font-family:inherit; font-size:0.85rem; font-weight:600;
@@ -169,7 +184,7 @@
   }
   .add-bar h2{font-size:1rem; font-weight:700; margin-bottom:14px; color:var(--teal);}
   .add-grid{
-    display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:10px; align-items:end;
+    display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; align-items:end;
   }
   .field label{display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:5px; font-weight:600;}
   .field input, .field select{
@@ -257,6 +272,73 @@
 
   footer{text-align:center; color:var(--text-muted); font-size:0.75rem; margin-top:30px; padding-bottom:10px;}
   footer button{background:none; border:none; color:var(--teal); font-weight:700; cursor:pointer; font-family:inherit; font-size:0.75rem;}
+  .credit{margin-top:14px; font-size:0.72rem; color:var(--text-muted); opacity:0.85;}
+  .credit strong{color:var(--text);}
+  .credit-brand{color:var(--teal); font-weight:700;}
+
+  /* ===== Mobile-first refinements ===== */
+  .add-row-main{display:flex; gap:10px; align-items:center;}
+  .add-row-main > .field{flex:1; margin:0;}
+  .toggle-more{display:none;}
+  .add-more{overflow:hidden; transition:max-height .25s ease, margin-top .25s ease;}
+
+  .board-tabs{display:none;}
+
+  @media (max-width:700px){
+    body{padding:14px; padding-bottom: calc(14px + env(safe-area-inset-bottom));}
+    header{padding:16px 18px;}
+    .brand-logo{height:36px;}
+    #gaugeSvg{width:52px; height:52px;}
+    .brand-text h1{font-size:1.15rem;}
+
+    /* Overflow "more" menu for secondary header buttons */
+    .more-toggle{display:inline-flex;}
+    .secondary-actions{
+      display:none; position:absolute; top:calc(100% + 8px); left:0; z-index:40;
+      background:var(--card); border:1px solid var(--border); border-radius:12px;
+      box-shadow:var(--shadow-lift); padding:10px; flex-direction:column; gap:8px; min-width:190px;
+    }
+    .secondary-actions.show{display:flex;}
+    .secondary-actions .btn{width:100%; justify-content:flex-start;}
+
+    .wa-number-field{flex-direction:column; align-items:stretch; border-top:1px solid var(--border); margin-top:4px; padding-top:10px;}
+    .wa-number-field input{width:100%;}
+    .wa-hint{display:block;}
+
+    /* Collapsible add-task extra fields */
+    .toggle-more{display:inline-flex; flex-shrink:0;}
+    .add-more{max-height:0; margin-top:0;}
+    .add-more.expanded{max-height:400px; margin-top:14px;}
+    .add-grid{grid-template-columns:1fr 1fr;}
+
+    /* Filter pills scroll horizontally instead of wrapping */
+    .filter-pills{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px;}
+    .filter-pill{flex:0 0 auto;}
+
+    /* Column tabs replace the 3-column board */
+    .board-tabs{
+      display:flex; gap:8px; margin-bottom:14px; overflow-x:auto;
+      -webkit-overflow-scrolling:touch; padding-bottom:2px;
+    }
+    .board-tab{
+      flex:0 0 auto; font-family:inherit; font-size:0.82rem; font-weight:700;
+      padding:9px 15px; border-radius:999px; border:1px solid var(--border);
+      background:var(--card); color:var(--text-muted); white-space:nowrap;
+      display:flex; align-items:center; gap:6px; cursor:pointer;
+    }
+    .board-tab.active{background:var(--teal); color:#fff; border-color:var(--teal);}
+    .tab-count{font-size:0.7rem; background:var(--card-soft); color:var(--text-muted); padding:1px 7px; border-radius:999px;}
+    .board-tab.active .tab-count{background:rgba(255,255,255,0.25); color:#fff;}
+
+    .board{grid-template-columns:1fr;}
+    .board .column{display:none;}
+    .board .column.mobile-active{display:block;}
+
+    /* Bigger touch targets */
+    .icon-btn{font-size:1.05rem; padding:7px 9px;}
+    .task-check{width:22px; height:22px;}
+    .btn{padding:10px 16px;}
+  }
 </style>
 </head>
 <body>
@@ -264,7 +346,7 @@
 
   <header>
     <div class="brand">
-      <img src="logo-header.png" alt="MS Strategy & Growth" class="brand-logo">
+      <img src="logo-header.png" alt="MS Strategy & Growth - Mohamed Sabry" class="brand-logo" title="MS Strategy & Growth — بواسطة محمد صبري">
       <svg id="gaugeSvg" width="64" height="64" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="42" fill="none" stroke="#E4DFD3" stroke-width="10"/>
         <circle id="gaugeArc" cx="50" cy="50" r="42" fill="none" stroke="#3E6E6E" stroke-width="10"
@@ -278,14 +360,22 @@
         <div class="streak" id="streakLabel"></div>
       </div>
     </div>
-    <div class="header-actions">
-      <button class="btn" id="themeBtn" title="الوضع الليلي">🌙</button>
-      <button class="btn" id="installBtn" style="display:none;">📲 تثبيت التطبيق</button>
+    <div class="header-actions" id="headerActions">
       <button class="btn" id="notifyBtn">🔔 فعّل التذكيرات</button>
       <button class="btn btn-whatsapp" id="whatsappBtn">📤 ابعت المهم لواتساب</button>
-      <button class="btn" id="exportBtn">⬇️ نسخة احتياطية</button>
-      <button class="btn" id="importBtn">⬆️ استرجاع نسخة</button>
-      <input type="file" id="importFile" accept="application/json">
+      <button class="btn more-toggle" id="moreToggle">⋯ المزيد</button>
+      <div class="secondary-actions" id="secondaryActions">
+        <button class="btn" id="themeBtn" title="الوضع الليلي">🌙 الوضع الليلي</button>
+        <button class="btn" id="installBtn" style="display:none;">📲 تثبيت التطبيق</button>
+        <button class="btn" id="exportBtn">⬇️ نسخة احتياطية</button>
+        <button class="btn" id="importBtn">⬆️ استرجاع نسخة</button>
+        <input type="file" id="importFile" accept="application/json">
+        <div class="wa-number-field">
+          <label for="waNumberInput">📱 رقمك على واتساب</label>
+          <input id="waNumberInput" type="tel" placeholder="مثال: 201012345678">
+          <span class="wa-hint">بالكود الدولي، بدون + وبدون صفر البداية</span>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -316,42 +406,51 @@
 
   <div class="add-bar">
     <h2 id="formTitle">➕ إضافة مهمة جديدة</h2>
-    <div class="add-grid">
+    <div class="add-row-main">
       <div class="field">
         <label for="taskTitle">عنوان المهمة</label>
         <input id="taskTitle" type="text" placeholder="مثال: متابعة عرض سعر عميل...">
       </div>
-      <div class="field">
-        <label for="taskDate">التاريخ (اختياري)</label>
-        <input id="taskDate" type="date">
-      </div>
-      <div class="field">
-        <label for="taskTime">الوقت (اختياري)</label>
-        <input id="taskTime" type="time">
-      </div>
-      <div class="field">
-        <label for="taskPriority">الأولوية</label>
-        <select id="taskPriority">
-          <option value="medium">متوسطة</option>
-          <option value="high">عالية</option>
-          <option value="low">منخفضة</option>
-        </select>
-      </div>
-      <div class="field">
-        <button class="btn btn-primary" id="saveBtn" style="width:100%; justify-content:center;">حفظ</button>
-      </div>
+      <button class="btn toggle-more" id="toggleMoreBtn" type="button">تفاصيل ⌄</button>
+      <button class="btn btn-primary" id="saveBtn">حفظ</button>
     </div>
-    <div class="field note-row">
-      <label for="taskNote">ملاحظة (اختياري)</label>
-      <input id="taskNote" type="text" placeholder="تفاصيل إضافية...">
+    <div class="add-more" id="addMore">
+      <div class="add-grid">
+        <div class="field">
+          <label for="taskDate">التاريخ (اختياري)</label>
+          <input id="taskDate" type="date">
+        </div>
+        <div class="field">
+          <label for="taskTime">الوقت (اختياري)</label>
+          <input id="taskTime" type="time">
+        </div>
+        <div class="field">
+          <label for="taskPriority">الأولوية</label>
+          <select id="taskPriority">
+            <option value="medium">متوسطة</option>
+            <option value="high">عالية</option>
+            <option value="low">منخفضة</option>
+          </select>
+        </div>
+      </div>
+      <div class="field note-row">
+        <label for="taskNote">ملاحظة (اختياري)</label>
+        <input id="taskNote" type="text" placeholder="تفاصيل إضافية...">
+      </div>
     </div>
     <div id="editRow" style="margin-top:10px; display:none;">
       <button class="btn btn-ghost" id="cancelEditBtn">إلغاء التعديل</button>
     </div>
   </div>
 
+  <div class="board-tabs" id="boardTabs">
+    <button class="board-tab active" data-target="daily">🔁 يومية <span class="tab-count" id="tabCountDaily">0</span></button>
+    <button class="board-tab" data-target="near">⏳ قريبة <span class="tab-count" id="tabCountNear">0</span></button>
+    <button class="board-tab" data-target="far">📅 بعيدة <span class="tab-count" id="tabCountFar">0</span></button>
+  </div>
+
   <div class="board">
-    <div class="column col-daily">
+    <div class="column col-daily mobile-active">
       <div class="col-head"><h3>🔁 مهام يومية</h3><span class="col-count" id="countDaily">0</span></div>
       <div id="colDaily"></div>
     </div>
@@ -368,6 +467,7 @@
   <footer>
     البيانات محفوظة محليًا على هذا الجهاز — خذ نسخة احتياطية بشكل دوري ولو بتستخدمها من أكتر من جهاز.
     <br><button id="shortcutsToggle">⌨️ الاختصارات المتاحة</button>
+    <div class="credit">صُنعت بواسطة <strong>محمد صبري</strong> — <span class="credit-brand">MS Strategy &amp; Growth</span></div>
   </footer>
 </div>
 
@@ -383,6 +483,52 @@
 <div id="toast"></div>
 
 <script>
+/* ============ MOBILE: HEADER OVERFLOW MENU ============ */
+const moreToggle = document.getElementById('moreToggle');
+const secondaryActions = document.getElementById('secondaryActions');
+moreToggle.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  secondaryActions.classList.toggle('show');
+});
+document.addEventListener('click', (e)=>{
+  if(secondaryActions.classList.contains('show') && !secondaryActions.contains(e.target) && e.target !== moreToggle){
+    secondaryActions.classList.remove('show');
+  }
+});
+
+/* ============ WHATSAPP NUMBER (per-user setting) ============ */
+const waNumberInput = document.getElementById('waNumberInput');
+waNumberInput.value = localStorage.getItem('msWhatsappNumber') || '';
+waNumberInput.addEventListener('change', ()=>{
+  const digits = waNumberInput.value.replace(/\D/g, '');
+  waNumberInput.value = digits;
+  localStorage.setItem('msWhatsappNumber', digits);
+  showToast(digits ? 'اتحفظ رقمك ✓' : 'اتشال الرقم');
+});
+
+/* ============ MOBILE: COLLAPSIBLE ADD-MORE FIELDS ============ */
+const addMore = document.getElementById('addMore');
+const toggleMoreBtn = document.getElementById('toggleMoreBtn');
+toggleMoreBtn.addEventListener('click', ()=>{
+  const expanded = addMore.classList.toggle('expanded');
+  toggleMoreBtn.textContent = expanded ? 'تفاصيل ⌃' : 'تفاصيل ⌄';
+});
+function expandAddMore(){
+  addMore.classList.add('expanded');
+  toggleMoreBtn.textContent = 'تفاصيل ⌃';
+}
+
+/* ============ MOBILE: BOARD TABS ============ */
+document.getElementById('boardTabs').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.board-tab');
+  if(!btn) return;
+  document.querySelectorAll('.board-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.board .column').forEach(c=>c.classList.remove('mobile-active'));
+  const target = document.querySelector('.board .column.col-' + btn.dataset.target);
+  if(target) target.classList.add('mobile-active');
+});
+
 /* ============ DB LAYER (IndexedDB) ============ */
 const DB_NAME = 'noorTasksDB';
 const STORE = 'tasks';
@@ -427,8 +573,10 @@ function dbDelete(id){
 }
 
 /* ============ CONFIG ============ */
-// رقم الواتساب اللي هيتبعتله زرار "ابعت المهم لواتساب" (بالكود الدولي بدون +)
-const WHATSAPP_NUMBER = '201022179431';
+// كل مستخدم بيحط رقم واتساب بتاعه بنفسه من قائمة "⋯ المزيد" — بيتحفظ محليًا على جهازه فقط
+function getWhatsappNumber(){
+  return (localStorage.getItem('msWhatsappNumber') || '').replace(/\D/g, '');
+}
 
 const QUOTES = [
   'الانضباط هو الجسر بين الهدف وتحقيقه.',
@@ -501,6 +649,9 @@ async function render(){
   document.getElementById('countDaily').textContent = daily.length;
   document.getElementById('countNear').textContent = near.length;
   document.getElementById('countFar').textContent = far.length;
+  document.getElementById('tabCountDaily').textContent = daily.length;
+  document.getElementById('tabCountNear').textContent = near.length;
+  document.getElementById('tabCountFar').textContent = far.length;
 
   renderColumn('colDaily', daily, 'لا توجد مهام يومية بعد — أضف أول مهمة لك 👆');
   renderColumn('colNear', near, 'لا توجد مواعيد قريبة');
@@ -660,6 +811,7 @@ function startEdit(t){
   document.getElementById('taskPriority').value = t.priority;
   document.getElementById('formTitle').textContent = '✏️ تعديل المهمة';
   document.getElementById('editRow').style.display = 'block';
+  expandAddMore();
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -674,6 +826,8 @@ function resetForm(){
   document.getElementById('taskPriority').value = 'medium';
   document.getElementById('formTitle').textContent = '➕ إضافة مهمة جديدة';
   document.getElementById('editRow').style.display = 'none';
+  addMore.classList.remove('expanded');
+  toggleMoreBtn.textContent = 'تفاصيل ⌄';
 }
 
 /* ============ SEARCH / FILTERS ============ */
@@ -763,6 +917,14 @@ themeBtn.addEventListener('click', ()=>{
 
 /* ============ WHATSAPP EXPORT ============ */
 document.getElementById('whatsappBtn').addEventListener('click', async ()=>{
+  const number = getWhatsappNumber();
+  if(!number){
+    showToast('حط رقمك على واتساب الأول من "⋯ المزيد"');
+    secondaryActions.classList.add('show');
+    waNumberInput.focus();
+    return;
+  }
+
   const tasks = await dbGetAll();
   const today = todayStr();
   const important = tasks.filter(t =>
@@ -797,7 +959,7 @@ document.getElementById('whatsappBtn').addEventListener('click', async ()=>{
   });
   msg += `\nمُرسَل من لوحتي الشخصية — MS Strategy & Growth`;
 
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  const url = `https://wa.me/${number}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 });
 
@@ -841,6 +1003,7 @@ document.getElementById('exportBtn').addEventListener('click', async ()=>{
   const payload = {
     tasks,
     pinnedNote: localStorage.getItem('msPinnedNote') || '',
+    whatsappNumber: localStorage.getItem('msWhatsappNumber') || '',
     exportedAt: new Date().toISOString()
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
@@ -867,6 +1030,10 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
         localStorage.setItem('msPinnedNote', parsed.pinnedNote);
         pinnedNoteEl.value = parsed.pinnedNote;
         autoResize(pinnedNoteEl);
+      }
+      if(!Array.isArray(parsed) && typeof parsed.whatsappNumber === 'string' && parsed.whatsappNumber){
+        localStorage.setItem('msWhatsappNumber', parsed.whatsappNumber);
+        waNumberInput.value = parsed.whatsappNumber;
       }
       render();
       showToast('تم استرجاع النسخة الاحتياطية ✓');

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ms-tasks-v2';
+const CACHE_NAME = 'ms-tasks-v5';
 const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png', './logo-header.png'];
 
 self.addEventListener('install', (e) => {
