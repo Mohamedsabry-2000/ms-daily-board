@@ -689,7 +689,15 @@ if(firebaseReady){
   const googleProvider = new firebase.auth.GoogleAuthProvider();
 
   document.getElementById('googleSignInBtn').addEventListener('click', ()=>{
-    auth.signInWithRedirect(googleProvider);
+    auth.signInWithPopup(googleProvider).catch((err)=>{
+      console.error(err);
+      // بعض المتصفحات (خصوصًا التطبيق المثبت) بتمنع النافذة المنبثقة، فنرجع لطريقة إعادة التوجيه
+      if(err && (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request' || err.code === 'auth/operation-not-supported-in-this-environment')){
+        auth.signInWithRedirect(googleProvider);
+      } else if(err && err.code !== 'auth/popup-closed-by-user'){
+        showToast('حصلت مشكلة في تسجيل الدخول، جرب تاني');
+      }
+    });
   });
 
   document.getElementById('signOutBtn').addEventListener('click', ()=>{
