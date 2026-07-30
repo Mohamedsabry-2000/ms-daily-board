@@ -118,6 +118,7 @@
     display:none; position:absolute; top:calc(100% + 8px); left:0; z-index:40;
     background:var(--card); border:1px solid var(--border); border-radius:12px;
     box-shadow:var(--shadow-lift); padding:10px; flex-direction:column; gap:8px; min-width:220px;
+    max-height:min(70vh, 520px); overflow-y:auto;
   }
   .secondary-actions.show{display:flex;}
   .secondary-actions .btn{width:100%; justify-content:flex-start;}
@@ -357,6 +358,31 @@
   .auth-google-btn{width:100%; justify-content:center; padding:12px 16px; font-size:0.9rem;}
   .auth-hint{font-size:var(--fs-xs); margin-top:16px; margin-bottom:0; opacity:0.8;}
 
+  /* ===== Weekly summary modal ===== */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(43,43,38,0.45);
+    align-items:center; justify-content:center; z-index:90; padding:20px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal-card{
+    background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow-lift);
+    padding:22px 24px; max-width:420px; width:100%; max-height:85vh; overflow-y:auto;
+  }
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .modal-head h3{font-family:var(--font-display); font-size:var(--fs-lg); color:var(--teal);}
+  .summary-stats{display:flex; flex-direction:column; gap:12px;}
+  .summary-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--card-soft); border:1px solid var(--border); border-radius:12px; padding:12px 16px;
+  }
+  .summary-row .label{font-size:var(--fs-sm); color:var(--text-muted);}
+  .summary-row .value{font-family:var(--font-display); font-size:1.2rem; font-weight:700; color:var(--teal);}
+  .summary-bars{display:flex; align-items:flex-end; gap:6px; height:80px; margin-top:6px;}
+  .summary-bar-col{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end;}
+  .summary-bar{width:100%; max-width:26px; background:var(--teal-tint); border-radius:6px 6px 0 0; transition:height .4s ease;}
+  .summary-bar.has-data{background:var(--teal);}
+  .summary-bar-label{font-size:0.65rem; color:var(--text-muted);}
+
   /* ===== Mobile-first refinements ===== */
   .add-row-main{display:flex; gap:10px; align-items:center;}
   .title-input-wrap{position:relative;}
@@ -464,6 +490,7 @@
       <div class="secondary-actions" id="secondaryActions">
         <button class="btn" id="themeBtn" title="الوضع الليلي">🌙 الوضع الليلي</button>
         <button class="btn" id="installBtn" style="display:none;">📲 تثبيت التطبيق</button>
+        <button class="btn" id="weeklySummaryBtn">📊 الملخص الأسبوعي</button>
         <button class="btn" id="exportBtn">⬇️ نسخة احتياطية</button>
         <button class="btn" id="importBtn">⬆️ استرجاع نسخة</button>
         <button class="btn" id="signOutBtn">🚪 تسجيل الخروج</button>
@@ -611,6 +638,16 @@
 </div>
 
 <div id="toast"></div>
+
+<div class="modal-overlay" id="weeklySummaryModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📊 الملخص الأسبوعي</h3>
+      <button class="icon-btn" id="closeWeeklySummary" aria-label="إغلاق">✕</button>
+    </div>
+    <div class="summary-stats" id="summaryStats"></div>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -886,6 +923,85 @@ if(firebaseReady){
     }
   });
 }
+
+/* ============ WEEKLY SUMMARY ============ */
+function computeWeeklySummary(){
+  const days = [];
+  for(let i = 6; i >= 0; i--){
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const dayLabel = d.toLocaleDateString('ar-EG', { weekday: 'short' });
+    const doneCount = tasksCache.filter(t => t.dueDate === dateStr && t.done).length;
+    const totalCount = tasksCache.filter(t => t.dueDate === dateStr).length;
+    days.push({ dateStr, dayLabel, doneCount, totalCount });
+  }
+
+  const weekDated = tasksCache.filter(t => t.dueDate && days.some(d => d.dateStr === t.dueDate));
+  const weekDone = weekDated.filter(t => t.done).length;
+  const weekTotal = weekDated.length;
+  const weekRate = weekTotal === 0 ? null : Math.round((weekDone / weekTotal) * 100);
+
+  const overdueCount = tasksCache.filter(t => t.dueDate && !t.done && daysDiff(t.dueDate) < 0).length;
+
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+  const addedThisWeek = tasksCache.filter(t => t.createdAt && t.createdAt >= weekAgo.getTime()).length;
+
+  const streak = settingsCache.streak || 0;
+
+  return { days, weekDone, weekTotal, weekRate, overdueCount, addedThisWeek, streak };
+}
+
+function renderWeeklySummary(){
+  const s = computeWeeklySummary();
+  const maxCount = Math.max(1, ...s.days.map(d => d.totalCount));
+
+  const barsHtml = s.days.map(d => {
+    const heightPct = d.totalCount === 0 ? 4 : Math.max(10, Math.round((d.doneCount / maxCount) * 100));
+    return `
+      <div class="summary-bar-col">
+        <div class="summary-bar ${d.totalCount > 0 ? 'has-data' : ''}" style="height:${heightPct}%;" title="${d.doneCount}/${d.totalCount}"></div>
+        <div class="summary-bar-label">${d.dayLabel}</div>
+      </div>`;
+  }).join('');
+
+  const rateText = s.weekRate === null ? 'لا توجد مواعيد هذا الأسبوع' : s.weekRate + '%';
+
+  document.getElementById('summaryStats').innerHTML = `
+    <div class="summary-row">
+      <span class="label">🔥 سلسلة الإنجاز الحالية</span>
+      <span class="value">${s.streak} يوم</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">✅ نسبة إنجاز مواعيد الأسبوع</span>
+      <span class="value">${rateText}</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">⏰ مهام متأخرة حاليًا</span>
+      <span class="value">${s.overdueCount}</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">🆕 مهام أضفتها آخر 7 أيام</span>
+      <span class="value">${s.addedThisWeek}</span>
+    </div>
+    <div>
+      <div class="label" style="font-size:var(--fs-sm); color:var(--text-muted); margin-bottom:4px;">المواعيد المنجزة يوميًا (آخر 7 أيام)</div>
+      <div class="summary-bars">${barsHtml}</div>
+    </div>
+  `;
+}
+
+document.getElementById('weeklySummaryBtn').addEventListener('click', ()=>{
+  renderWeeklySummary();
+  document.getElementById('weeklySummaryModal').classList.add('show');
+  secondaryActions.classList.remove('show');
+});
+document.getElementById('closeWeeklySummary').addEventListener('click', ()=>{
+  document.getElementById('weeklySummaryModal').classList.remove('show');
+});
+document.getElementById('weeklySummaryModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'weeklySummaryModal') e.currentTarget.classList.remove('show');
+});
 
 /* ============ DATA LAYER (Firestore) ============ */
 async function dbGetAll(){
