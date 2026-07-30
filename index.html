@@ -108,6 +108,10 @@
   .brand-text h1{font-family:var(--font-display); font-size:var(--fs-xl); font-weight:700; color:var(--teal); letter-spacing:-0.01em; display:flex; align-items:center; gap:8px;}
   .brand-text .tag{font-size:var(--fs-xs); font-weight:800; background:var(--teal); color:#fff; padding:2px 8px; border-radius:999px; letter-spacing:0.5px;}
   .brand-text p{font-size:var(--fs-sm); color:var(--text-muted); margin-top:3px;}
+  .sync-status{font-size:var(--fs-xs); font-weight:700; margin-top:4px; display:inline-flex; align-items:center; gap:4px;}
+  .sync-status.synced{color:var(--sage);}
+  .sync-status.syncing{color:var(--amber);}
+  .sync-status.offline{color:var(--coral);}
   .header-actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center; position:relative;}
   .secondary-actions{display:contents;}
   .more-toggle{display:none;}
@@ -120,6 +124,22 @@
     direction:ltr; text-align:right;
   }
   .wa-number-field input:focus{outline:2px solid var(--teal-soft);}
+
+  .tags-manager{min-width:180px;}
+  .tags-manager label{display:block; font-size:0.72rem; font-weight:700; color:var(--text-muted); margin-bottom:8px;}
+  .tags-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;}
+  .tag-chip{
+    display:inline-flex; align-items:center; gap:6px; background:var(--teal-tint); color:var(--teal);
+    font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:999px;
+  }
+  .tag-chip button{background:none; border:none; color:var(--teal); cursor:pointer; font-size:0.8rem; padding:0; line-height:1;}
+  .tags-add-row{display:flex; gap:6px;}
+  .tags-add-row input{
+    flex:1; font-family:inherit; font-size:0.82rem; padding:7px 10px;
+    border:1px solid var(--border); border-radius:8px; background:var(--card-soft); color:var(--text);
+  }
+  .tags-add-row input:focus{outline:2px solid var(--teal-soft);}
+  .tags-add-row .btn{padding:7px 12px; font-size:0.78rem;}
   .wa-hint{display:none; font-size:0.65rem; color:var(--text-muted); margin-top:4px;}
 
   .btn{
@@ -206,7 +226,7 @@
   }
   .add-bar h2{font-size:1rem; font-weight:700; margin-bottom:14px; color:var(--teal);}
   .add-grid{
-    display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; align-items:end;
+    display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; align-items:end;
   }
   .field label{display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:5px; font-weight:600;}
   .field input, .field select{
@@ -270,6 +290,7 @@
   .badge-overdue{background:var(--coral-tint); color:var(--coral);}
   .badge-today{background:var(--amber-tint); color:var(--amber);}
   .badge-high{background:var(--amber-tint); color:var(--amber);}
+  .badge-tag{background:var(--gold-tint); color:var(--gold);}
   .task-actions{display:flex; gap:4px; margin-right:auto;}
   .icon-btn{
     background:transparent; border:none; cursor:pointer; font-size:0.85rem;
@@ -293,11 +314,17 @@
   /* ===== Toast ===== */
   #toast{
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
-    background:var(--teal); color:#fff; padding:12px 22px; border-radius:12px;
+    background:var(--teal); color:#fff; padding:12px 18px; border-radius:12px;
     font-size:0.85rem; font-weight:600; box-shadow:var(--shadow-lift);
     opacity:0; pointer-events:none; transition:all .25s ease; z-index:50; max-width:90vw; text-align:center;
+    display:flex; align-items:center; gap:14px;
   }
-  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto;}
+  .toast-undo-btn{
+    background:rgba(255,255,255,0.2); border:none; color:#fff; font-family:inherit; font-weight:800;
+    font-size:0.8rem; padding:5px 12px; border-radius:8px; cursor:pointer; flex-shrink:0;
+  }
+  .toast-undo-btn:hover{background:rgba(255,255,255,0.32);}
 
   footer{text-align:center; color:var(--text-muted); font-size:0.75rem; margin-top:30px; padding-bottom:10px;}
   footer button{background:none; border:none; color:var(--teal); font-weight:700; cursor:pointer; font-family:inherit; font-size:0.75rem;}
@@ -410,6 +437,7 @@
       <div class="brand-text">
         <h1>لوحتي اليومية</h1>
         <p id="todayLabel">—</p>
+        <div class="sync-status" id="syncStatus">🟢 متزامن</div>
       </div>
     </div>
     <div class="header-actions" id="headerActions">
@@ -427,6 +455,14 @@
           <label for="waNumberInput">📱 رقمك على واتساب</label>
           <input id="waNumberInput" type="tel" placeholder="مثال: 201012345678">
           <span class="wa-hint">بالكود الدولي، بدون + وبدون صفر البداية</span>
+        </div>
+        <div class="tags-manager">
+          <label>🏷️ تصنيفاتك</label>
+          <div class="tags-chips" id="tagsChips"></div>
+          <div class="tags-add-row">
+            <input id="newTagInput" type="text" placeholder="تصنيف جديد...">
+            <button class="btn" id="addTagBtn">إضافة</button>
+          </div>
         </div>
       </div>
     </div>
@@ -498,6 +534,12 @@
             <option value="medium">متوسطة</option>
             <option value="high">عالية</option>
             <option value="low">منخفضة</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="taskTag">التصنيف (اختياري)</label>
+          <select id="taskTag">
+            <option value="">بدون تصنيف</option>
           </select>
         </div>
       </div>
@@ -577,6 +619,79 @@ waNumberInput.addEventListener('change', ()=>{
   showToast(digits ? 'اتحفظ رقمك ✓' : 'اتشال الرقم');
 });
 
+/* ============ TAGS (تصنيفات المستخدم، متزامنة) ============ */
+function getTags(){
+  return Array.isArray(settingsCache.tags) ? settingsCache.tags : [];
+}
+
+function renderTagsUI(){
+  const tags = getTags();
+
+  // 1) شرائح الإدارة (إضافة/حذف) في قائمة "المزيد"
+  const chipsEl = document.getElementById('tagsChips');
+  chipsEl.innerHTML = '';
+  if(tags.length === 0){
+    chipsEl.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">لسه معملتش تصنيفات</span>';
+  } else {
+    tags.forEach(tag=>{
+      const chip = document.createElement('span');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${escapeHtml(tag)} <button type="button" aria-label="حذف">✕</button>`;
+      chip.querySelector('button').addEventListener('click', ()=> removeTag(tag));
+      chipsEl.appendChild(chip);
+    });
+  }
+
+  // 2) قائمة اختيار التصنيف في نموذج إضافة المهمة
+  const select = document.getElementById('taskTag');
+  const currentVal = select.value;
+  select.innerHTML = '<option value="">بدون تصنيف</option>' +
+    tags.map(tag => `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`).join('');
+  if(tags.includes(currentVal)) select.value = currentVal;
+
+  // 3) شرائح الفلترة الديناميكية بعد الشرائح الثابتة
+  const pillsEl = document.getElementById('filterPills');
+  pillsEl.querySelectorAll('.filter-pill[data-tag-pill]').forEach(el => el.remove());
+  tags.forEach(tag=>{
+    const pill = document.createElement('button');
+    pill.className = 'filter-pill';
+    pill.dataset.filter = 'tag:' + tag;
+    pill.dataset.tagPill = '1';
+    pill.textContent = '🏷️ ' + tag;
+    if(currentFilter === 'tag:' + tag) pill.classList.add('active');
+    pillsEl.appendChild(pill);
+  });
+}
+
+document.getElementById('addTagBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('newTagInput');
+  const value = input.value.trim();
+  if(!value) return;
+  const tags = getTags();
+  if(tags.includes(value)){ showToast('التصنيف ده موجود بالفعل'); return; }
+  const updated = [...tags, value];
+  updateSettings({ tags: updated });
+  settingsCache.tags = updated;
+  renderTagsUI();
+  input.value = '';
+  showToast('اتضاف تصنيف "' + value + '" ✓');
+});
+
+document.getElementById('newTagInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('addTagBtn').click(); }
+});
+
+function removeTag(tag){
+  const updated = getTags().filter(x => x !== tag);
+  updateSettings({ tags: updated });
+  settingsCache.tags = updated;
+  if(currentFilter === 'tag:' + tag){
+    currentFilter = 'all';
+    render();
+  }
+  renderTagsUI();
+}
+
 /* ============ MOBILE: COLLAPSIBLE ADD-MORE FIELDS ============ */
 const addMore = document.getElementById('addMore');
 const toggleMoreBtn = document.getElementById('toggleMoreBtn');
@@ -635,13 +750,34 @@ function tasksCollection(){ return firestore.collection('users').doc(currentUser
 function settingsDocRef(){ return firestore.collection('users').doc(currentUser.uid).collection('meta').doc('settings'); }
 function backupsCollection(){ return firestore.collection('users').doc(currentUser.uid).collection('backups'); }
 
+let tasksLoaded = false;
+
 function startTasksListener(){
   if(unsubscribeTasks) unsubscribeTasks();
-  unsubscribeTasks = tasksCollection().onSnapshot((snap)=>{
+  unsubscribeTasks = tasksCollection().onSnapshot({ includeMetadataChanges:true }, (snap)=>{
     tasksCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    tasksLoaded = true;
+    updateSyncStatus(snap.metadata.hasPendingWrites);
     render();
   }, (err)=>{ console.error(err); showToast('حصلت مشكلة في المزامنة'); });
 }
+
+function updateSyncStatus(hasPendingWrites){
+  const el = document.getElementById('syncStatus');
+  if(!el) return;
+  if(!navigator.onLine){
+    el.textContent = '🔴 من غير إنترنت — هيتزامن أول ما ترجع تتصل';
+    el.className = 'sync-status offline';
+  } else if(hasPendingWrites){
+    el.textContent = '🟡 بيتزامن...';
+    el.className = 'sync-status syncing';
+  } else {
+    el.textContent = '🟢 متزامن';
+    el.className = 'sync-status synced';
+  }
+}
+window.addEventListener('online', ()=> updateSyncStatus(false));
+window.addEventListener('offline', ()=> updateSyncStatus(false));
 
 function startSettingsListener(){
   if(unsubscribeSettings) unsubscribeSettings();
@@ -654,6 +790,7 @@ function startSettingsListener(){
     if(document.activeElement !== waNumberInput){
       waNumberInput.value = settingsCache.whatsappNumber || '';
     }
+    renderTagsUI();
   });
 }
 
@@ -721,6 +858,7 @@ if(firebaseReady){
       maybeAutoBackup();
     } else {
       currentUser = null;
+      tasksLoaded = false;
       if(unsubscribeTasks){ unsubscribeTasks(); unsubscribeTasks = null; }
       if(unsubscribeSettings){ unsubscribeSettings(); unsubscribeSettings = null; }
       authGate.style.display = 'flex';
@@ -794,6 +932,9 @@ async function render(){
     tasks = tasks.filter(t => t.priority === 'high');
   } else if(currentFilter === 'done'){
     tasks = tasks.filter(t => t.done);
+  } else if(currentFilter.startsWith('tag:')){
+    const tagName = currentFilter.slice(4);
+    tasks = tasks.filter(t => t.tag === tagName);
   }
 
   tasks.sort((a,b)=>{
@@ -822,9 +963,10 @@ async function render(){
   document.getElementById('tabCountNear').textContent = near.length;
   document.getElementById('tabCountFar').textContent = far.length;
 
-  renderColumn('colDaily', daily, 'مفيش مهام يومية لسه — ابدأ يومك، أضف أول مهمة من فوق 👆');
-  renderColumn('colNear', near, 'مفيش مواعيد قريبة دلوقتي. الأسبوع الجاي هادي ✌️');
-  renderColumn('colFar', far, 'مفيش مواعيد بعيدة متسجلة. لما يبقى عندك حاجة، هتلاقيها هنا.');
+  const loadingMsg = 'بيتحمّل...';
+  renderColumn('colDaily', daily, tasksLoaded ? 'مفيش مهام يومية لسه — ابدأ يومك، أضف أول مهمة من فوق 👆' : loadingMsg);
+  renderColumn('colNear', near, tasksLoaded ? 'مفيش مواعيد قريبة دلوقتي. الأسبوع الجاي هادي ✌️' : loadingMsg);
+  renderColumn('colFar', far, tasksLoaded ? 'مفيش مواعيد بعيدة متسجلة. لما يبقى عندك حاجة، هتلاقيها هنا.' : loadingMsg);
 
   updateGauge(all);
   updateStreak(all);
@@ -858,6 +1000,7 @@ function taskCard(t){
     badge = `<span class="badge ${cls}">${label}</span>`;
   }
   const highBadge = t.priority === 'high' ? `<span class="badge badge-high">أولوية عالية</span>` : '';
+  const tagBadge = t.tag ? `<span class="badge badge-tag">🏷️ ${escapeHtml(t.tag)}</span>` : '';
 
   div.innerHTML = `
     <div class="task-top">
@@ -868,6 +1011,7 @@ function taskCard(t){
         <div class="task-meta">
           ${badge}
           ${highBadge}
+          ${tagBadge}
           <div class="task-actions">
             <button class="icon-btn editBtn" title="تعديل">✏️</button>
             <button class="icon-btn delBtn" title="حذف">🗑️</button>
@@ -883,10 +1027,11 @@ function taskCard(t){
     render();
   });
   div.querySelector('.delBtn').addEventListener('click', async ()=>{
-    if(confirm('حذف هذه المهمة؟')){
-      await dbDelete(t.id);
-      render();
-    }
+    const snapshot = { ...t };
+    await dbDelete(t.id);
+    showUndoToast(`اتحذفت "${t.title}"`, async ()=>{
+      await dbPut(snapshot);
+    });
   });
   div.querySelector('.editBtn').addEventListener('click', ()=> startEdit(t));
 
@@ -944,17 +1089,107 @@ function updateStreak(tasks){
 /* ============ FORM ============ */
 document.getElementById('saveBtn').addEventListener('click', saveTask);
 
+/* ============ SMART: NATURAL LANGUAGE DATE/TIME PARSING ============ */
+function parseNaturalDate(rawTitle){
+  let title = rawTitle;
+  let date = null;
+  let time = null;
+
+  function addDays(n){
+    const d = new Date();
+    d.setDate(d.getDate() + n);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  const dayPatterns = [
+    { re: /بعد بكرة|بعد بكره/, days: 2 },
+    { re: /بعد يومين/, days: 2 },
+    { re: /النهارده|النهاردة|اليوم/, days: 0 },
+    { re: /بكرة|بكره|غدًا|غدا/, days: 1 },
+    { re: /الأسبوع الجاي|الاسبوع الجاي/, days: 7 }
+  ];
+  for(const p of dayPatterns){
+    if(p.re.test(title)){
+      date = addDays(p.days);
+      title = title.replace(p.re, '').trim();
+      break;
+    }
+  }
+  const afterNDays = title.match(/بعد\s+(\d+)\s*(يوم|ايام|أيام)/);
+  if(!date && afterNDays){
+    date = addDays(parseInt(afterNDays[1], 10));
+    title = title.replace(afterNDays[0], '').trim();
+  }
+
+  const timeWords = [
+    { re: /الصبح|صباحًا|صباحا/, time: '09:00', label: '9:00 ص' },
+    { re: /الضهر|الظهر/, time: '14:00', label: '2:00 م' },
+    { re: /العصر/, time: '17:00', label: '5:00 م' },
+    { re: /المغرب/, time: '19:00', label: '7:00 م' },
+    { re: /بالليل|الليل|مساءً|مساء/, time: '21:00', label: '9:00 م' }
+  ];
+  let timeLabel = null;
+  for(const w of timeWords){
+    if(w.re.test(title)){
+      time = w.time; timeLabel = w.label;
+      title = title.replace(w.re, '').trim();
+      break;
+    }
+  }
+  if(!time){
+    const hourMatch = title.match(/الساعة\s*(\d{1,2})(\s*ونص)?/);
+    if(hourMatch){
+      let h = parseInt(hourMatch[1], 10);
+      const half = !!hourMatch[2];
+      if(h >= 1 && h <= 7) h += 12; // افتراض إنه بعد الضهر لو رقم صغير من غير توضيح
+      time = String(h).padStart(2,'0') + ':' + (half ? '30' : '00');
+      timeLabel = 'الساعة ' + hourMatch[1] + (half ? ':30' : ':00');
+      title = title.replace(hourMatch[0], '').trim();
+    }
+  }
+
+  title = title.replace(/\s{2,}/g, ' ').trim();
+  return { title, date, time, timeLabel };
+}
+
+const URGENT_KEYWORDS = /عاجل|ضروري|ضرورى|مستعجل|مهم جدا|مهم جدًا|urgent/i;
+
 async function saveTask(){
-  const title = document.getElementById('taskTitle').value.trim();
+  let title = document.getElementById('taskTitle').value.trim();
   if(!title){ showToast('اكتب عنوان المهمة أولاً'); return; }
+
+  let dueDate = document.getElementById('taskDate').value || null;
+  let dueTime = document.getElementById('taskTime').value || null;
+  let priority = document.getElementById('taskPriority').value;
+  let smartNote = '';
+
+  if(!editingId && !dueDate){
+    const parsed = parseNaturalDate(title);
+    if(parsed.date || parsed.time){
+      title = parsed.title || title;
+      dueDate = parsed.date || dueDate;
+      dueTime = parsed.time || dueTime;
+      smartNote = ' ✨';
+    }
+  }
+
+  if(!editingId && priority === 'medium' && URGENT_KEYWORDS.test(title)){
+    priority = 'high';
+    smartNote = ' ✨ (أولوية عالية تلقائيًا)';
+  }
+
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'بيتحفظ...';
 
   const task = {
     id: editingId || uid(),
     title,
     note: document.getElementById('taskNote').value.trim(),
-    dueDate: document.getElementById('taskDate').value || null,
-    dueTime: document.getElementById('taskTime').value || null,
-    priority: document.getElementById('taskPriority').value,
+    dueDate,
+    dueTime,
+    priority,
+    tag: document.getElementById('taskTag').value || null,
     done: false,
     createdAt: Date.now(),
     lastNotified: null
@@ -966,10 +1201,18 @@ async function saveTask(){
     task.createdAt = existing ? existing.createdAt : Date.now();
   }
 
-  await dbPut(task);
-  resetForm();
-  render();
-  showToast(editingId ? 'تم تحديث المهمة ✓' : 'تمت إضافة المهمة ✓');
+  try{
+    await dbPut(task);
+    resetForm();
+    render();
+    showToast((editingId ? 'تم تحديث المهمة ✓' : 'تمت إضافة المهمة ✓') + smartNote);
+  }catch(err){
+    console.error(err);
+    showToast('حصلت مشكلة في الحفظ، جرب تاني');
+  }finally{
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'حفظ';
+  }
 }
 
 function startEdit(t){
@@ -979,6 +1222,7 @@ function startEdit(t){
   document.getElementById('taskDate').value = t.dueDate || '';
   document.getElementById('taskTime').value = t.dueTime || '';
   document.getElementById('taskPriority').value = t.priority;
+  document.getElementById('taskTag').value = t.tag || '';
   document.getElementById('formTitle').textContent = '✏️ تعديل المهمة';
   document.getElementById('editRow').style.display = 'block';
   expandAddMore();
@@ -994,6 +1238,7 @@ function resetForm(){
   document.getElementById('taskDate').value = '';
   document.getElementById('taskTime').value = '';
   document.getElementById('taskPriority').value = 'medium';
+  document.getElementById('taskTag').value = '';
   document.getElementById('formTitle').textContent = '➕ إضافة مهمة جديدة';
   document.getElementById('editRow').style.display = 'none';
   addMore.classList.remove('expanded');
@@ -1171,6 +1416,7 @@ document.getElementById('exportBtn').addEventListener('click', async ()=>{
     tasks,
     pinnedNote: settingsCache.pinnedNote || '',
     whatsappNumber: settingsCache.whatsappNumber || '',
+    tags: getTags(),
     exportedAt: new Date().toISOString()
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
@@ -1202,6 +1448,11 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
         updateSettings({ whatsappNumber: parsed.whatsappNumber });
         waNumberInput.value = parsed.whatsappNumber;
       }
+      if(!Array.isArray(parsed) && Array.isArray(parsed.tags)){
+        updateSettings({ tags: parsed.tags });
+        settingsCache.tags = parsed.tags;
+        renderTagsUI();
+      }
       render();
       showToast('تم استرجاع النسخة الاحتياطية ✓');
     }catch(err){
@@ -1216,10 +1467,31 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
 let toastTimer;
 function showToast(msg){
   const t = document.getElementById('toast');
+  t.innerHTML = '';
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=> t.classList.remove('show'), 3500);
+}
+
+function showUndoToast(msg, onUndo){
+  const t = document.getElementById('toast');
+  t.innerHTML = '';
+  const span = document.createElement('span');
+  span.textContent = msg;
+  const btn = document.createElement('button');
+  btn.textContent = 'تراجع';
+  btn.className = 'toast-undo-btn';
+  btn.addEventListener('click', async ()=>{
+    t.classList.remove('show');
+    clearTimeout(toastTimer);
+    await onUndo();
+  });
+  t.appendChild(span);
+  t.appendChild(btn);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 5000);
 }
 
 /* ============ PWA: INSTALL + SERVICE WORKER ============ */
