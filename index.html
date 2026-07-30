@@ -912,6 +912,15 @@ function daysDiff(dateStr){
   return Math.round((target - today) / 86400000);
 }
 
+// المهام اليومية (بدون تاريخ) بترجع "لسه مش خلصانة" كل يوم جديد تلقائيًا؛
+// المهام اللي ليها تاريخ ثابت بتفضل خلصانة زي ما هي لحد ما تتفتح تاني.
+function isTaskDone(t){
+  if(!t.dueDate){
+    return t.lastDoneDate ? t.lastDoneDate === todayStr() : !!t.done;
+  }
+  return !!t.done;
+}
+
 /* ============ RENDER ============ */
 async function render(){
   const all = await dbGetAll();
@@ -931,7 +940,7 @@ async function render(){
   } else if(currentFilter === 'high'){
     tasks = tasks.filter(t => t.priority === 'high');
   } else if(currentFilter === 'done'){
-    tasks = tasks.filter(t => t.done);
+    tasks = tasks.filter(t => isTaskDone(t));
   } else if(currentFilter.startsWith('tag:')){
     const tagName = currentFilter.slice(4);
     tasks = tasks.filter(t => t.tag === tagName);
@@ -986,8 +995,9 @@ function renderColumn(elId, list, emptyMsg){
 function taskCard(t){
   const div = document.createElement('div');
   const diff = t.dueDate ? daysDiff(t.dueDate) : null;
-  const isOverdue = t.dueDate && !t.done && diff < 0;
-  div.className = 'task priority-' + t.priority + (t.done ? ' done' : '') + (isOverdue ? ' overdue' : '');
+  const done = isTaskDone(t);
+  const isOverdue = t.dueDate && !done && diff < 0;
+  div.className = 'task priority-' + t.priority + (done ? ' done' : '') + (isOverdue ? ' overdue' : '');
 
   let badge = '';
   if(t.dueDate){
@@ -1004,7 +1014,7 @@ function taskCard(t){
 
   div.innerHTML = `
     <div class="task-top">
-      <input type="checkbox" class="task-check" ${t.done ? 'checked' : ''} aria-label="إنجاز المهمة">
+      <input type="checkbox" class="task-check" ${done ? 'checked' : ''} aria-label="إنجاز المهمة">
       <div style="flex:1;">
         <div class="task-title">${escapeHtml(t.title)}</div>
         ${t.note ? `<div class="task-note">${escapeHtml(t.note)}</div>` : ''}
@@ -1022,7 +1032,11 @@ function taskCard(t){
   `;
 
   div.querySelector('.task-check').addEventListener('change', async (e)=>{
-    t.done = e.target.checked;
+    if(!t.dueDate){
+      t.lastDoneDate = e.target.checked ? todayStr() : null;
+    } else {
+      t.done = e.target.checked;
+    }
     await dbPut(t);
     render();
   });
@@ -1048,7 +1062,7 @@ function escapeHtml(str){
 function updateGauge(tasks){
   const todayTasks = tasks.filter(t => !t.dueDate || t.dueDate === todayStr());
   const total = todayTasks.length;
-  const done = todayTasks.filter(t=>t.done).length;
+  const done = todayTasks.filter(t=>isTaskDone(t)).length;
   const pct = total === 0 ? 100 : Math.round((done/total)*100);
 
   const circumference = 264;
@@ -1065,7 +1079,7 @@ function updateStreak(tasks){
   const el = document.getElementById('streakLabel');
   const today = todayStr();
   const todayTasks = tasks.filter(t => !t.dueDate || t.dueDate === today);
-  const todayComplete = todayTasks.length > 0 && todayTasks.every(t => t.done);
+  const todayComplete = todayTasks.length > 0 && todayTasks.every(t => isTaskDone(t));
 
   let streak = settingsCache.streak || 0;
   let lastDay = settingsCache.streakDay || '';
@@ -1340,7 +1354,7 @@ document.getElementById('whatsappBtn').addEventListener('click', async ()=>{
   const tasks = await dbGetAll();
   const today = todayStr();
   const important = tasks.filter(t =>
-    !t.done && (
+    !isTaskDone(t) && (
       t.priority === 'high' ||
       (t.dueDate && daysDiff(t.dueDate) <= 0) // اليوم أو متأخر
     )
