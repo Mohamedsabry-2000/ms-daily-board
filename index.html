@@ -36,11 +36,16 @@
     --sage-tint:#EAF0E6;
     --gold:#B8923F;
     --gold-tint:#F3ECDA;
+    --violet:#8B5FBF;
+    --violet-tint:#EEE7F7;
+    --pink:#D6568F;
+    --pink-tint:#FBE6EF;
     --shadow: 0 2px 10px rgba(43,43,38,0.06);
     --shadow-lift: 0 8px 24px rgba(43,43,38,0.10);
     --radius: 16px;
     --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
-    --growth-gradient: linear-gradient(90deg, var(--teal) 0%, var(--sage) 45%, var(--amber) 75%, var(--coral) 100%);
+    --growth-gradient: linear-gradient(90deg, var(--teal) 0%, var(--violet) 35%, var(--pink) 65%, var(--coral) 100%);
+    --vibrant-gradient: linear-gradient(135deg, var(--teal) 0%, var(--violet) 55%, var(--pink) 100%);
     --font-display: 'El Messiri', 'Cairo', sans-serif;
     --font-body: 'Cairo', sans-serif;
     --fs-xs: 0.7rem;
@@ -69,13 +74,20 @@
     --sage-tint:#25301F;
     --gold:#D8B968;
     --gold-tint:#332B18;
+    --violet:#B49AE0;
+    --violet-tint:#2E2740;
+    --pink:#E893B8;
+    --pink-tint:#3A2530;
     --shadow: 0 2px 10px rgba(0,0,0,0.25);
     --shadow-lift: 0 8px 24px rgba(0,0,0,0.35);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     font-family:var(--font-body);
-    background:var(--bg);
+    background:
+      radial-gradient(circle at 8% 0%, var(--violet-tint) 0%, transparent 38%),
+      radial-gradient(circle at 100% 15%, var(--pink-tint) 0%, transparent 35%),
+      var(--bg);
     color:var(--text);
     min-height:100vh;
     padding:20px;
@@ -143,7 +155,7 @@
     display:inline-flex; align-items:center; gap:6px; background:var(--teal-tint); color:var(--teal);
     font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:999px;
   }
-  .tag-chip button{background:none; border:none; color:var(--teal); cursor:pointer; font-size:0.8rem; padding:0; line-height:1;}
+  .tag-chip button{background:none; border:none; color:inherit; cursor:pointer; font-size:0.8rem; padding:0; line-height:1; opacity:0.75;}
   .tags-add-row{display:flex; gap:6px;}
   .tags-add-row input{
     flex:1; font-family:inherit; font-size:0.82rem; padding:7px 10px;
@@ -163,8 +175,8 @@
   .btn:hover{background:var(--card); box-shadow:var(--shadow); transform:translateY(-1px);}
   .btn:active{transform:scale(0.97);}
   .btn:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
-  .btn-primary{background:var(--teal); color:#fff; border-color:var(--teal);}
-  .btn-primary:hover{background:#345c5c;}
+  .btn-primary{background:var(--vibrant-gradient); color:#fff; border-color:transparent;}
+  .btn-primary:hover{filter:brightness(1.08);}
   .btn-ghost{background:transparent; border-color:transparent; color:var(--text-muted);}
   .btn-ghost:hover{background:var(--card-soft); color:var(--text);}
   .btn-whatsapp{background:#25D366; color:#fff; border-color:#25D366;}
@@ -228,7 +240,7 @@
     font-family:inherit; font-size:0.78rem; font-weight:600; padding:7px 13px; border-radius:999px;
     border:1px solid var(--border); background:var(--card); color:var(--text-muted); cursor:pointer;
   }
-  .filter-pill.active{background:var(--teal); color:#fff; border-color:var(--teal);}
+  .filter-pill.active{background:var(--vibrant-gradient); color:#fff; border-color:transparent;}
 
   /* ===== Add task bar ===== */
   .add-bar{
@@ -356,6 +368,12 @@
   .auth-card h2{font-family:var(--font-display); font-size:var(--fs-xl); color:var(--teal); margin-bottom:10px;}
   .auth-card p{font-size:var(--fs-sm); color:var(--text-muted); line-height:1.6; margin-bottom:20px;}
   .auth-google-btn{width:100%; justify-content:center; padding:12px 16px; font-size:0.9rem;}
+  .name-gate-input{
+    width:100%; font-family:inherit; font-size:0.95rem; padding:11px 14px; margin-bottom:14px;
+    border:1px solid var(--border); border-radius:10px; background:var(--card-soft); color:var(--text);
+    text-align:center;
+  }
+  .name-gate-input:focus{outline:2px solid var(--teal-soft);}
   .auth-hint{font-size:var(--fs-xs); margin-top:16px; margin-bottom:0; opacity:0.8;}
 
   /* ===== Weekly summary modal ===== */
@@ -382,6 +400,49 @@
   .summary-bar{width:100%; max-width:26px; background:var(--teal-tint); border-radius:6px 6px 0 0; transition:height .4s ease;}
   .summary-bar.has-data{background:var(--teal);}
   .summary-bar-label{font-size:0.65rem; color:var(--text-muted);}
+
+  /* ===== Broadcast banner (admin announcement) ===== */
+  .broadcast-banner{
+    display:flex; align-items:center; gap:10px;
+    background:var(--vibrant-gradient); color:#fff; border-radius:12px;
+    padding:12px 16px; margin-bottom:16px; box-shadow:var(--shadow);
+  }
+  .broadcast-icon{font-size:1.1rem; flex-shrink:0;}
+  .broadcast-text{flex:1; font-size:0.88rem; font-weight:600; line-height:1.5;}
+  .broadcast-close{background:rgba(255,255,255,0.22); border:none; color:#fff; border-radius:50%; width:24px; height:24px; cursor:pointer; flex-shrink:0; font-size:0.75rem;}
+  .broadcast-close:hover{background:rgba(255,255,255,0.35);}
+
+  .admin-broadcast-textarea{
+    width:100%; font-family:inherit; font-size:0.88rem; padding:10px 12px;
+    border:1px solid var(--border); border-radius:10px; background:var(--card-soft); color:var(--text);
+    resize:vertical; line-height:1.6;
+  }
+  .admin-broadcast-textarea:focus{outline:2px solid var(--teal-soft);}
+
+  /* ===== Creative clock (ADHD-friendly, gentle motion) ===== */
+  .creative-clock{
+    position:relative; overflow:hidden; isolation:isolate;
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px 20px; margin-bottom:18px; text-align:center; box-shadow:var(--shadow);
+  }
+  .clock-glow{
+    position:absolute; inset:-60%; z-index:0; pointer-events:none;
+    background:conic-gradient(from 0deg, var(--teal-tint), var(--violet-tint), var(--pink-tint), var(--amber-tint), var(--teal-tint));
+    animation:clockSpin 20s linear infinite;
+    opacity:0.55;
+  }
+  @keyframes clockSpin{ to{ transform:rotate(360deg); } }
+  .clock-digits{
+    position:relative; z-index:1; font-family:var(--font-display); font-size:2.4rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; gap:2px;
+    background:var(--vibrant-gradient); -webkit-background-clip:text; background-clip:text; color:transparent;
+    direction:ltr;
+  }
+  .clock-part{display:inline-block; min-width:1.3ch; transition:transform .15s ease;}
+  .clock-part.tick{transform:scale(1.18);}
+  .clock-colon{opacity:0.55; animation:colonBlink 1s steps(1) infinite; color:var(--violet);}
+  @keyframes colonBlink{ 50%{opacity:0.15;} }
+  .clock-caption{position:relative; z-index:1; font-size:var(--fs-sm); color:var(--text-muted); margin-top:6px; font-weight:600;}
 
   /* ===== Mobile-first refinements ===== */
   .add-row-main{display:flex; gap:10px; align-items:center;}
@@ -442,7 +503,7 @@
       background:var(--card); color:var(--text-muted); white-space:nowrap;
       display:flex; align-items:center; gap:6px; cursor:pointer;
     }
-    .board-tab.active{background:var(--teal); color:#fff; border-color:var(--teal);}
+    .board-tab.active{background:var(--vibrant-gradient); color:#fff; border-color:transparent;}
     .tab-count{font-size:0.7rem; background:var(--card-soft); color:var(--text-muted); padding:1px 7px; border-radius:999px;}
     .board-tab.active .tab-count{background:rgba(255,255,255,0.25); color:#fff;}
 
@@ -472,7 +533,23 @@
   </div>
 </div>
 
+<div id="nameGate" class="auth-gate" style="display:none;">
+  <div class="auth-card">
+    <img src="logo-header.png" alt="MS Strategy & Growth" class="auth-logo">
+    <h2>أهلاً بيك 👋</h2>
+    <p>قبل ما تبدأ، إيه اسمك؟</p>
+    <input id="nameGateInput" type="text" class="name-gate-input" placeholder="اكتب اسمك هنا...">
+    <button class="btn btn-primary auth-google-btn" id="nameGateSaveBtn">تمام، يلا نبدأ</button>
+  </div>
+</div>
+
 <div class="wrap" id="mainWrap" style="display:none;">
+
+  <div class="broadcast-banner" id="broadcastBanner" style="display:none;">
+    <span class="broadcast-icon">📢</span>
+    <span class="broadcast-text" id="broadcastText"></span>
+    <button class="broadcast-close" id="broadcastClose" aria-label="إغلاق">✕</button>
+  </div>
 
   <header>
     <div class="brand">
@@ -491,6 +568,7 @@
         <button class="btn" id="themeBtn" title="الوضع الليلي">🌙 الوضع الليلي</button>
         <button class="btn" id="installBtn" style="display:none;">📲 تثبيت التطبيق</button>
         <button class="btn" id="weeklySummaryBtn">📊 الملخص الأسبوعي</button>
+        <button class="btn" id="adminBroadcastBtn" style="display:none;">📢 رسالة لكل المستخدمين (أدمن)</button>
         <button class="btn" id="exportBtn">⬇️ نسخة احتياطية</button>
         <button class="btn" id="importBtn">⬆️ استرجاع نسخة</button>
         <button class="btn" id="signOutBtn">🚪 تسجيل الخروج</button>
@@ -515,9 +593,19 @@
   <div class="today-bar">
     <div class="today-gauge">
       <svg id="gaugeSvg" width="64" height="64" viewBox="0 0 100 100">
+        <defs>
+          <filter id="gaugeGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.2" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
         <circle cx="50" cy="50" r="42" fill="none" stroke="#E4DFD3" stroke-width="10"/>
         <circle id="gaugeArc" cx="50" cy="50" r="42" fill="none" stroke="#3E6E6E" stroke-width="10"
                 stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
+                filter="url(#gaugeGlow)"
                 transform="rotate(-90 50 50)" style="transition: stroke-dashoffset .7s cubic-bezier(.34,1.2,.64,1), stroke .3s ease;"/>
         <text id="gaugeText" x="50" y="56" text-anchor="middle" font-size="22" font-weight="800" fill="#2B2B26" font-family="Cairo">0%</text>
       </svg>
@@ -527,6 +615,18 @@
       </div>
     </div>
     <div class="quote-strip" id="quoteStrip"></div>
+  </div>
+
+  <div class="creative-clock" id="creativeClock">
+    <div class="clock-glow"></div>
+    <div class="clock-digits">
+      <span class="clock-part" id="clockHour">--</span>
+      <span class="clock-colon">:</span>
+      <span class="clock-part" id="clockMinute">--</span>
+      <span class="clock-colon">:</span>
+      <span class="clock-part" id="clockSecond">--</span>
+    </div>
+    <div class="clock-caption" id="clockCaption"></div>
   </div>
 
   <div class="pinned">
@@ -649,6 +749,21 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="adminBroadcastModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📢 رسالة لكل المستخدمين</h3>
+      <button class="icon-btn" id="closeAdminBroadcast" aria-label="إغلاق">✕</button>
+    </div>
+    <p style="font-size:var(--fs-sm); color:var(--text-muted); margin-bottom:12px;">الرسالة دي هتظهر لكل حد بيستخدم اللوحة في شريط فوق. سيبها فاضية وامسح عشان تشيلها.</p>
+    <textarea id="adminBroadcastInput" rows="3" class="admin-broadcast-textarea" placeholder="اكتب رسالتك هنا..."></textarea>
+    <div style="display:flex; gap:10px; margin-top:12px;">
+      <button class="btn btn-primary" id="adminBroadcastSaveBtn" style="flex:1; justify-content:center;">نشر الرسالة</button>
+      <button class="btn" id="adminBroadcastClearBtn">مسح الرسالة</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -693,6 +808,7 @@ function renderTagsUI(){
     tags.forEach(tag=>{
       const chip = document.createElement('span');
       chip.className = 'tag-chip';
+      chip.style.cssText = tagColorStyle(tag);
       chip.innerHTML = `${escapeHtml(tag)} <button type="button" aria-label="حذف">✕</button>`;
       chip.querySelector('button').addEventListener('click', ()=> removeTag(tag));
       chipsEl.appendChild(chip);
@@ -802,9 +918,14 @@ let tasksCache = [];
 let settingsCache = {};
 let unsubscribeTasks = null;
 let unsubscribeSettings = null;
+let unsubscribeBroadcast = null;
+
+const ADMIN_EMAIL = 'sabrry30@gmail.com';
+let isAdmin = false;
 
 function tasksCollection(){ return firestore.collection('users').doc(currentUser.uid).collection('tasks'); }
 function settingsDocRef(){ return firestore.collection('users').doc(currentUser.uid).collection('meta').doc('settings'); }
+function broadcastDocRef(){ return firestore.collection('broadcast').doc('message'); }
 function backupsCollection(){ return firestore.collection('users').doc(currentUser.uid).collection('backups'); }
 
 let tasksLoaded = false;
@@ -848,8 +969,45 @@ function startSettingsListener(){
       waNumberInput.value = settingsCache.whatsappNumber || '';
     }
     renderTagsUI();
+    checkNameGate();
+    updateGreeting();
   });
 }
+
+function checkNameGate(){
+  const nameGate = document.getElementById('nameGate');
+  const mainWrap = document.getElementById('mainWrap');
+  if(!settingsCache.displayName){
+    nameGate.style.display = 'flex';
+    mainWrap.style.display = 'none';
+  } else {
+    nameGate.style.display = 'none';
+    mainWrap.style.display = 'block';
+  }
+}
+
+function updateGreeting(){
+  const h1 = document.querySelector('.brand-text h1');
+  if(!h1) return;
+  h1.textContent = settingsCache.displayName ? `أهلاً، ${settingsCache.displayName} 👋` : 'لوحتي اليومية';
+}
+
+document.getElementById('nameGateSaveBtn').addEventListener('click', async ()=>{
+  const name = document.getElementById('nameGateInput').value.trim();
+  if(!name){ showToast('اكتب اسمك الأول'); return; }
+  try{
+    await updateSettings({ displayName: name });
+    settingsCache.displayName = name;
+    checkNameGate();
+    updateGreeting();
+  }catch(err){
+    console.error(err);
+    showToast('حصلت مشكلة، جرب تاني');
+  }
+});
+document.getElementById('nameGateInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('nameGateSaveBtn').click(); }
+});
 
 function updateSettings(partial){
   return settingsDocRef().set(partial, { merge:true });
@@ -908,18 +1066,89 @@ if(firebaseReady){
     const mainWrap = document.getElementById('mainWrap');
     if(user){
       currentUser = user;
+      isAdmin = user.email === ADMIN_EMAIL;
+      document.getElementById('adminBroadcastBtn').style.display = isAdmin ? 'inline-flex' : 'none';
       authGate.style.display = 'none';
       mainWrap.style.display = 'block';
       startTasksListener();
       startSettingsListener();
+      startBroadcastListener();
       maybeAutoBackup();
     } else {
       currentUser = null;
       tasksLoaded = false;
+      isAdmin = false;
       if(unsubscribeTasks){ unsubscribeTasks(); unsubscribeTasks = null; }
       if(unsubscribeSettings){ unsubscribeSettings(); unsubscribeSettings = null; }
+      if(unsubscribeBroadcast){ unsubscribeBroadcast(); unsubscribeBroadcast = null; }
       authGate.style.display = 'flex';
       mainWrap.style.display = 'none';
+    }
+  });
+}
+
+/* ============ BROADCAST (رسالة الأدمن لكل المستخدمين) ============ */
+function startBroadcastListener(){
+  if(unsubscribeBroadcast) unsubscribeBroadcast();
+  unsubscribeBroadcast = broadcastDocRef().onSnapshot((doc)=>{
+    const banner = document.getElementById('broadcastBanner');
+    const textEl = document.getElementById('broadcastText');
+    const data = doc.exists ? doc.data() : null;
+
+    if(data && data.text && data.text.trim()){
+      const dismissedKey = 'msBroadcastDismissed';
+      const dismissedStamp = sessionStorage.getItem(dismissedKey);
+      const currentStamp = data.updatedAt ? String(data.updatedAt.toMillis()) : data.text;
+      textEl.textContent = data.text;
+      banner.style.display = (dismissedStamp === currentStamp) ? 'none' : 'flex';
+      banner.dataset.stamp = currentStamp;
+    } else {
+      banner.style.display = 'none';
+    }
+  }, (err)=> console.error('broadcast listener error', err));
+}
+
+document.getElementById('broadcastClose').addEventListener('click', ()=>{
+  const banner = document.getElementById('broadcastBanner');
+  sessionStorage.setItem('msBroadcastDismissed', banner.dataset.stamp || '1');
+  banner.style.display = 'none';
+});
+
+if(firebaseReady){
+  document.getElementById('adminBroadcastBtn').addEventListener('click', ()=>{
+    broadcastDocRef().get().then((doc)=>{
+      document.getElementById('adminBroadcastInput').value = doc.exists ? (doc.data().text || '') : '';
+    });
+    document.getElementById('adminBroadcastModal').classList.add('show');
+    secondaryActions.classList.remove('show');
+  });
+  document.getElementById('closeAdminBroadcast').addEventListener('click', ()=>{
+    document.getElementById('adminBroadcastModal').classList.remove('show');
+  });
+  document.getElementById('adminBroadcastModal').addEventListener('click', (e)=>{
+    if(e.target.id === 'adminBroadcastModal') e.currentTarget.classList.remove('show');
+  });
+  document.getElementById('adminBroadcastSaveBtn').addEventListener('click', async ()=>{
+    const text = document.getElementById('adminBroadcastInput').value.trim();
+    if(!text){ showToast('اكتب رسالة الأول'); return; }
+    try{
+      await broadcastDocRef().set({ text, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      showToast('اتنشرت الرسالة للجميع ✓');
+      document.getElementById('adminBroadcastModal').classList.remove('show');
+    }catch(err){
+      console.error(err);
+      showToast('حصلت مشكلة في النشر');
+    }
+  });
+  document.getElementById('adminBroadcastClearBtn').addEventListener('click', async ()=>{
+    try{
+      await broadcastDocRef().set({ text: '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      document.getElementById('adminBroadcastInput').value = '';
+      showToast('اتشالت الرسالة');
+      document.getElementById('adminBroadcastModal').classList.remove('show');
+    }catch(err){
+      console.error(err);
+      showToast('حصلت مشكلة');
     }
   });
 }
@@ -1146,7 +1375,7 @@ function taskCard(t){
     badge = `<span class="badge ${cls}">${label}</span>`;
   }
   const highBadge = t.priority === 'high' ? `<span class="badge badge-high">أولوية عالية</span>` : '';
-  const tagBadge = t.tag ? `<span class="badge badge-tag">🏷️ ${escapeHtml(t.tag)}</span>` : '';
+  const tagBadge = t.tag ? `<span class="badge" style="${tagColorStyle(t.tag)}">🏷️ ${escapeHtml(t.tag)}</span>` : '';
 
   div.innerHTML = `
     <div class="task-top">
@@ -1186,6 +1415,22 @@ function taskCard(t){
   div.querySelector('.editBtn').addEventListener('click', ()=> startEdit(t));
 
   return div;
+}
+
+const TAG_COLOR_PAIRS = [
+  ['var(--teal)', 'var(--teal-tint)'],
+  ['var(--violet)', 'var(--violet-tint)'],
+  ['var(--pink)', 'var(--pink-tint)'],
+  ['var(--amber)', 'var(--amber-tint)'],
+  ['var(--coral)', 'var(--coral-tint)'],
+  ['var(--sage)', 'var(--sage-tint)'],
+  ['var(--gold)', 'var(--gold-tint)']
+];
+function tagColorStyle(tag){
+  let hash = 0;
+  for(let i = 0; i < tag.length; i++){ hash = (hash * 31 + tag.charCodeAt(i)) >>> 0; }
+  const [fg, bg] = TAG_COLOR_PAIRS[hash % TAG_COLOR_PAIRS.length];
+  return `color:${fg}; background:${bg};`;
 }
 
 function escapeHtml(str){
@@ -1722,8 +1967,40 @@ function setTodayLabel(){
   document.getElementById('todayLabel').textContent = d.toLocaleDateString('ar-EG', opts);
 }
 
+/* ============ CREATIVE CLOCK ============ */
+let lastClockParts = { h: '', m: '', s: '' };
+function tickClock(){
+  const d = new Date();
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const s = String(d.getSeconds()).padStart(2, '0');
+
+  const hourEl = document.getElementById('clockHour');
+  const minEl = document.getElementById('clockMinute');
+  const secEl = document.getElementById('clockSecond');
+
+  if(h !== lastClockParts.h){ hourEl.textContent = h; bumpTick(hourEl); }
+  if(m !== lastClockParts.m){ minEl.textContent = m; bumpTick(minEl); }
+  if(s !== lastClockParts.s){ secEl.textContent = s; bumpTick(secEl); }
+  lastClockParts = { h, m, s };
+
+  const hourNum = d.getHours();
+  let caption;
+  if(hourNum >= 5 && hourNum < 12) caption = 'صباح الخير ☀️';
+  else if(hourNum >= 12 && hourNum < 17) caption = 'نهارك سعيد 🌤️';
+  else if(hourNum >= 17 && hourNum < 21) caption = 'مساء الخير 🌇';
+  else caption = 'طاب مساؤك 🌙';
+  document.getElementById('clockCaption').textContent = caption;
+}
+function bumpTick(el){
+  el.classList.add('tick');
+  setTimeout(()=> el.classList.remove('tick'), 160);
+}
+
 (async function init(){
   setTodayLabel();
+  tickClock();
+  setInterval(tickClock, 1000);
   setInterval(()=>{ render(); }, 60000); // recheck كل دقيقة للتذكيرات والعد التنازلي
 })();
 </script>
