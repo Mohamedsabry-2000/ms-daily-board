@@ -113,19 +113,29 @@
   .sync-status.syncing{color:var(--amber);}
   .sync-status.offline{color:var(--coral);}
   .header-actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center; position:relative;}
-  .secondary-actions{display:contents;}
-  .more-toggle{display:none;}
+  .more-toggle{display:inline-flex;}
+  .secondary-actions{
+    display:none; position:absolute; top:calc(100% + 8px); left:0; z-index:40;
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    box-shadow:var(--shadow-lift); padding:10px; flex-direction:column; gap:8px; min-width:220px;
+  }
+  .secondary-actions.show{display:flex;}
+  .secondary-actions .btn{width:100%; justify-content:flex-start;}
 
-  .wa-number-field{display:flex; align-items:center; gap:6px;}
-  .wa-number-field label{font-size:0.78rem; font-weight:600; color:var(--text-muted); white-space:nowrap;}
+  .wa-number-field{
+    display:flex; flex-direction:column; align-items:stretch;
+    border-top:1px solid var(--border); margin-top:4px; padding-top:10px;
+  }
+  .wa-number-field label{font-size:0.72rem; font-weight:700; color:var(--text-muted); margin-bottom:6px;}
   .wa-number-field input{
-    width:150px; font-family:inherit; font-size:0.85rem; padding:8px 10px;
+    width:100%; font-family:inherit; font-size:0.85rem; padding:8px 10px;
     border:1px solid var(--border); border-radius:8px; background:var(--card-soft); color:var(--text);
     direction:ltr; text-align:right;
   }
   .wa-number-field input:focus{outline:2px solid var(--teal-soft);}
+  .wa-hint{display:block; font-size:0.65rem; color:var(--text-muted); margin-top:4px;}
 
-  .tags-manager{min-width:180px;}
+  .tags-manager{min-width:180px; border-top:1px solid var(--border); margin-top:4px; padding-top:10px;}
   .tags-manager label{display:block; font-size:0.72rem; font-weight:700; color:var(--text-muted); margin-bottom:8px;}
   .tags-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;}
   .tag-chip{
@@ -349,11 +359,32 @@
 
   /* ===== Mobile-first refinements ===== */
   .add-row-main{display:flex; gap:10px; align-items:center;}
+  .title-input-wrap{position:relative;}
+  .title-input-wrap input{padding-left:40px;}
+  .mic-btn{
+    position:absolute; left:2px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; font-size:1.05rem; padding:9px;
+    border-radius:50%; color:var(--text-muted); line-height:1; transition:background .15s ease, color .15s ease;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mic-btn:hover{background:var(--card-soft); color:var(--text);}
+  .mic-btn.listening{color:var(--coral); animation:micPulse 1.1s ease-in-out infinite;}
+  @keyframes micPulse{
+    0%, 100%{ box-shadow:0 0 0 0 rgba(193,89,75,0.35); }
+    50%{ box-shadow:0 0 0 8px rgba(193,89,75,0); }
+  }
   .add-row-main > .field{flex:1; margin:0;}
   .toggle-more{display:none;}
   .add-more{overflow:hidden; transition:max-height .25s ease, margin-top .25s ease;}
 
   .board-tabs{display:none;}
+
+  @media (max-width:700px){
+    .add-row-main{flex-wrap:wrap;}
+    .add-row-main .field{flex:1 1 100%;}
+    .toggle-more{flex:1;}
+    #saveBtn{flex:1; justify-content:center;}
+  }
 
   @media (max-width:700px){
     body{padding:14px; padding-bottom: calc(14px + env(safe-area-inset-bottom));}
@@ -363,20 +394,6 @@
     .brand-text h1{font-size:1.15rem;}
     .today-bar{flex-direction:column; align-items:stretch; gap:10px; padding:14px 16px;}
     .quote-strip{border-right:none; padding-right:0; border-top:1px solid var(--border); padding-top:10px; text-align:center;}
-
-    /* Overflow "more" menu for secondary header buttons */
-    .more-toggle{display:inline-flex;}
-    .secondary-actions{
-      display:none; position:absolute; top:calc(100% + 8px); left:0; z-index:40;
-      background:var(--card); border:1px solid var(--border); border-radius:12px;
-      box-shadow:var(--shadow-lift); padding:10px; flex-direction:column; gap:8px; min-width:190px;
-    }
-    .secondary-actions.show{display:flex;}
-    .secondary-actions .btn{width:100%; justify-content:flex-start;}
-
-    .wa-number-field{flex-direction:column; align-items:stretch; border-top:1px solid var(--border); margin-top:4px; padding-top:10px;}
-    .wa-number-field input{width:100%;}
-    .wa-hint{display:block;}
 
     /* Collapsible add-task extra fields */
     .toggle-more{display:inline-flex; flex-shrink:0;}
@@ -408,7 +425,7 @@
     .board .column.mobile-active{display:block;}
 
     /* Bigger touch targets */
-    .icon-btn{font-size:1.05rem; padding:7px 9px;}
+    .icon-btn{font-size:1.05rem; padding:9px 11px;}
     .task-check{width:22px; height:22px;}
     .btn{padding:10px 16px;}
   }
@@ -513,7 +530,10 @@
     <div class="add-row-main">
       <div class="field">
         <label for="taskTitle">عنوان المهمة</label>
-        <input id="taskTitle" type="text" placeholder="مثال: متابعة عرض سعر عميل...">
+        <div class="title-input-wrap">
+          <input id="taskTitle" type="text" placeholder="مثال: متابعة عرض سعر عميل...">
+          <button type="button" class="mic-btn" id="micBtn" title="إدخال بالصوت">🎤</button>
+        </div>
       </div>
       <button class="btn toggle-more" id="toggleMoreBtn" type="button">تفاصيل ⌄</button>
       <button class="btn btn-primary" id="saveBtn">حفظ</button>
@@ -1102,6 +1122,52 @@ function updateStreak(tasks){
 
 /* ============ FORM ============ */
 document.getElementById('saveBtn').addEventListener('click', saveTask);
+
+/* ============ SMART: VOICE INPUT ============ */
+(function setupVoiceInput(){
+  const micBtn = document.getElementById('micBtn');
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if(!SpeechRecognitionAPI){
+    // بعض المتصفحات (زي سفاري على آيفون) مش بتدعم الميزة دي — نخفي الزرار بدل ما يفضل معطل
+    micBtn.style.display = 'none';
+    return;
+  }
+
+  const recognition = new SpeechRecognitionAPI();
+  recognition.lang = 'ar-EG';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  let isListening = false;
+
+  micBtn.addEventListener('click', ()=>{
+    if(isListening){ recognition.stop(); return; }
+    try{ recognition.start(); }catch(e){ /* بيرمي خطأ لو already started، نتجاهله */ }
+  });
+
+  recognition.onstart = ()=>{ isListening = true; micBtn.classList.add('listening'); };
+  recognition.onend = ()=>{ isListening = false; micBtn.classList.remove('listening'); };
+
+  recognition.onerror = (e)=>{
+    isListening = false;
+    micBtn.classList.remove('listening');
+    if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+      showToast('محتاجين إذن الميكروفون عشان الميزة دي تشتغل');
+    } else if(e.error === 'no-speech'){
+      showToast('معملتش أي صوت، جرب تاني');
+    } else if(e.error !== 'aborted'){
+      showToast('حصلت مشكلة في التعرف على الصوت');
+    }
+  };
+
+  recognition.onresult = (e)=>{
+    const text = e.results[0][0].transcript.trim();
+    if(!text) return;
+    const titleInput = document.getElementById('taskTitle');
+    titleInput.value = titleInput.value ? titleInput.value + ' ' + text : text;
+    titleInput.focus();
+  };
+})();
 
 /* ============ SMART: NATURAL LANGUAGE DATE/TIME PARSING ============ */
 function parseNaturalDate(rawTitle){
