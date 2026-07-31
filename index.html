@@ -767,6 +767,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 
 <script>
 /* ============ MOBILE: HEADER OVERFLOW MENU ============ */
@@ -1817,11 +1818,50 @@ document.getElementById('whatsappBtn').addEventListener('click', async ()=>{
 });
 
 /* ============ REMINDERS ============ */
+const FCM_VAPID_KEY = 'BBM0UXDRAFsaKNtFYnhW0Khvo5JmVMtOZHyNK8p6cE-dmp2mlqFarrH7ED5D-Sar24wy3boG4vs9NIK-_dtESrk';
+
 document.getElementById('notifyBtn').addEventListener('click', async ()=>{
   if(!('Notification' in window)){ showToast('المتصفح لا يدعم التنبيهات'); return; }
   const perm = await Notification.requestPermission();
-  showToast(perm === 'granted' ? 'تم تفعيل التذكيرات 🔔' : 'لم يتم منح الإذن');
+  if(perm !== 'granted'){ showToast('لم يتم منح الإذن'); return; }
+  showToast('تم تفعيل التذكيرات 🔔');
+  registerFcmToken();
 });
+
+async function registerFcmToken(){
+  if(!firebaseReady || !currentUser) return;
+  if(!('serviceWorker' in navigator) || !firebase.messaging || !firebase.messaging.isSupported()) return;
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg });
+    if(token){
+      await firestore.collection('users').doc(currentUser.uid).collection('devices').doc(token).set({
+        token,
+        platform: navigator.userAgent,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  }catch(err){
+    console.error('FCM token registration failed', err);
+  }
+}
+
+// لو المستخدم كان موافق على الإشعارات بالفعل من قبل، نجدد التوكن بهدوء عند فتح اللوحة
+if(firebaseReady && 'Notification' in window && Notification.permission === 'granted'){
+  auth.onAuthStateChanged((user)=>{ if(user) registerFcmToken(); });
+}
+
+// استقبال إشعارات الخلفية وإحنا فاتحين اللوحة فعليًا (foreground)
+if(firebaseReady && firebase.messaging && firebase.messaging.isSupported()){
+  try{
+    firebase.messaging().onMessage((payload)=>{
+      const title = payload.notification?.title || 'تذكير من لوحتك';
+      const body = payload.notification?.body || '';
+      showToast(`🔔 ${title}: ${body}`);
+    });
+  }catch(err){ /* بعض المتصفحات لا تدعم onMessage، متجاهلينها بأمان */ }
+}
 
 async function notifyUser(title, body, tag){
   if(!('Notification' in window) || Notification.permission !== 'granted') return;
