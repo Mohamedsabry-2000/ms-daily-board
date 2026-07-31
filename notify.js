@@ -70,8 +70,8 @@ async function main(){
         tokens,
         notification: { title, body },
         webpush: {
-          fcmOptions: { link: 'https://YOUR_USERNAME.github.io/ms-daily-board/' },
-          notification: { icon: 'https://YOUR_USERNAME.github.io/ms-daily-board/icon-192.png' }
+          fcmOptions: { link: 'https://mohamedsabry-2000.github.io/ms-daily-board/' },
+          notification: { icon: 'https://mohamedsabry-2000.github.io/ms-daily-board/icon-192.png' }
         }
       });
       console.log(`اتبعت لـ ${uid}: ${response.successCount} نجح، ${response.failureCount} فشل`);
