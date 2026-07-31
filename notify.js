@@ -36,20 +36,25 @@ async function main(){
   for(const userDoc of usersSnap.docs){
     const uid = userDoc.id;
 
-    // المهام المستحقة اليوم واللي لسه ماتعملهاش
-    const tasksSnap = await db.collection('users').doc(uid).collection('tasks')
-      .where('dueDate', '==', today)
-      .where('done', '==', false)
-      .get();
-
+    // بنجيب كل مهام المستخدم (مش بس اللي ليها تاريخ) عشان نغطي المهام اليومية والعادات كمان
+    const tasksSnap = await db.collection('users').doc(uid).collection('tasks').get();
     if(tasksSnap.empty) continue;
 
-    // فلترة: مهام مستحقة اليوم ولسه ما اتبعتش عليها إشعار النهاردة
+    // فلترة: أي مهمة (بتاريخ أو يومية/عادة) مستحقة النهاردة ولسه ما اتبعتش عليها إشعار
     const dueNow = [];
     tasksSnap.forEach(doc => {
       const t = doc.data();
       if(t.lastNotified === today) return;
-      if(t.dueTime && t.dueTime > currentTime) return; // لسه معدهاش وقتها
+
+      if(t.dueDate){
+        // مهمة بتاريخ محدد: تتفحص بتاريخها ووقتها وحالة الإنجاز العادية
+        if(t.dueDate !== today) return;
+        if(t.done) return;
+        if(t.dueTime && t.dueTime > currentTime) return;
+      } else {
+        // مهمة يومية متكررة أو عادة: تتفحص بـ lastDoneDate (بترجع "مش خلصانة" كل يوم جديد)
+        if(t.lastDoneDate === today) return;
+      }
       dueNow.push({ ref: doc.ref, task: t });
     });
 
@@ -60,18 +65,18 @@ async function main(){
     const tokens = devicesSnap.docs.map(d => d.id);
     if(tokens.length === 0){ console.log(`المستخدم ${uid} معندوش أجهزة مسجلة`); continue; }
 
-    const title = dueNow.length === 1 ? '🔔 تذكير بمهمة' : `🔔 لديك ${dueNow.length} مهام مستحقة`;
+    const title = dueNow.length === 1 ? '🔔 تذكير' : `🔔 لديك ${dueNow.length} حاجات مستحقة`;
     const body = dueNow.length === 1
-      ? dueNow[0].task.title
-      : dueNow.slice(0, 3).map(x => '• ' + x.task.title).join('\n');
+      ? `${dueNow[0].task.icon ? dueNow[0].task.icon + ' ' : ''}${dueNow[0].task.title}`
+      : dueNow.slice(0, 3).map(x => '• ' + (x.task.icon ? x.task.icon + ' ' : '') + x.task.title).join('\n');
 
     try{
       const response = await messaging.sendEachForMulticast({
         tokens,
         notification: { title, body },
         webpush: {
-          fcmOptions: { link: 'https://mohamedsabry-2000.github.io/ms-daily-board/' },
-          notification: { icon: 'https://mohamedsabry-2000.github.io/ms-daily-board/icon-192.png' }
+          fcmOptions: { link: 'https://YOUR_USERNAME.github.io/ms-daily-board/' },
+          notification: { icon: 'https://YOUR_USERNAME.github.io/ms-daily-board/icon-192.png' }
         }
       });
       console.log(`اتبعت لـ ${uid}: ${response.successCount} نجح، ${response.failureCount} فشل`);

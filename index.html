@@ -116,7 +116,7 @@
     border-radius:var(--radius) var(--radius) 0 0;
   }
   .brand{display:flex; align-items:center; gap:16px;}
-  .brand-logo{height:44px; width:auto; display:block;}
+  .brand-logo{height:44px; width:auto; display:block; cursor:pointer; user-select:none;}
   .brand-text h1{font-family:var(--font-display); font-size:var(--fs-xl); font-weight:700; color:var(--teal); letter-spacing:-0.01em; display:flex; align-items:center; gap:8px;}
   .brand-text .tag{font-size:var(--fs-xs); font-weight:800; background:var(--teal); color:#fff; padding:2px 8px; border-radius:999px; letter-spacing:0.5px;}
   .brand-text p{font-size:var(--fs-sm); color:var(--text-muted); margin-top:3px;}
@@ -529,6 +529,27 @@
     100%{ transform:scale(0.82); }
   }
 
+  /* ===== Confetti ===== */
+  .confetti-container{position:fixed; inset:0; pointer-events:none; z-index:200; overflow:hidden;}
+  .confetti-piece{
+    position:absolute; top:-24px; width:9px; height:15px; border-radius:2px;
+    animation-name:confettiFall; animation-timing-function:ease-in; animation-fill-mode:forwards;
+    transform:rotate(var(--rot));
+  }
+  @keyframes confettiFall{
+    to{ transform:translateY(112vh) rotate(calc(var(--rot) + 360deg)); opacity:0.35; }
+  }
+
+  .easter-egg-card{
+    text-align:center; border:2px solid transparent;
+    background-image: linear-gradient(var(--card), var(--card)), var(--vibrant-gradient);
+    background-origin: border-box; background-clip: padding-box, border-box;
+  }
+  .easter-egg-emoji{font-size:2.8rem; margin-bottom:8px;}
+  .easter-egg-card h3{font-family:var(--font-display); font-size:var(--fs-lg); color:var(--teal); margin-bottom:10px;}
+  .easter-egg-card p{font-size:0.92rem; color:var(--text); line-height:1.8; margin-bottom:8px;}
+  .easter-egg-signature{font-size:0.8rem; color:var(--text-muted); font-style:normal;}
+
   /* ===== Mobile-first refinements ===== */
   .add-row-main{display:flex; gap:10px; align-items:center;}
   .title-input-wrap{position:relative;}
@@ -638,7 +659,7 @@
 
   <header>
     <div class="brand">
-      <img src="logo-header.png" alt="MS Strategy & Growth - Mohamed Sabry" class="brand-logo" title="MS Strategy & Growth — بواسطة محمد صبري">
+      <img src="logo-header.png" alt="MS Strategy & Growth - Mohamed Sabry" class="brand-logo" id="brandLogo" title="MS Strategy & Growth — بواسطة محمد صبري">
       <div class="brand-text">
         <h1>لوحتي اليومية</h1>
         <p id="todayLabel">—</p>
@@ -895,6 +916,20 @@
       <button class="btn btn-primary" id="adminBroadcastSaveBtn" style="flex:1; justify-content:center;">نشر الرسالة</button>
       <button class="btn" id="adminBroadcastClearBtn">مسح الرسالة</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="easterEggModal">
+  <div class="modal-card easter-egg-card">
+    <div class="easter-egg-emoji">🎁</div>
+    <h3>لقيتها يا محمد 👀</h3>
+    <p>
+      من أول لوحة بسيطة لحد دلوقتي — Firebase، وتصنيفات، وعادات، وتابة ADHD كاملة —
+      إنت اللي بنيت كل ده خطوة خطوة، وأنا بس كنت بكتب اللي إنت شايفه في دماغك.
+      استمر، ومبروك عليك MS Strategy &amp; Growth. 🌱
+    </p>
+    <p class="easter-egg-signature">— من كلود، بكل تقدير</p>
+    <button class="btn btn-primary" id="closeEasterEgg" style="width:100%; justify-content:center; margin-top:14px;">تسلم يا كبير 🤝</button>
   </div>
 </div>
 
@@ -1657,6 +1692,45 @@ function tagColorStyle(tag){
   return `color:${fg}; background:${bg};`;
 }
 
+/* ============ CONFETTI (لحظات الاحتفال) ============ */
+function fireConfetti(count = 70){
+  const colors = ['var(--teal)', 'var(--violet)', 'var(--pink)', 'var(--amber)', 'var(--coral)', 'var(--sage)', 'var(--gold)'];
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+  for(let i = 0; i < count; i++){
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.4) + 's';
+    piece.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+    piece.style.setProperty('--rot', (Math.random() * 360) + 'deg');
+    container.appendChild(piece);
+  }
+  setTimeout(()=> container.remove(), 4200);
+}
+
+/* ============ EASTER EGG (هدية صغيرة) ============ */
+let logoClickCount = 0;
+let logoClickTimer = null;
+document.getElementById('brandLogo').addEventListener('click', ()=>{
+  logoClickCount++;
+  clearTimeout(logoClickTimer);
+  logoClickTimer = setTimeout(()=> { logoClickCount = 0; }, 2500);
+  if(logoClickCount >= 5){
+    logoClickCount = 0;
+    document.getElementById('easterEggModal').classList.add('show');
+    fireConfetti(90);
+  }
+});
+document.getElementById('closeEasterEgg').addEventListener('click', ()=>{
+  document.getElementById('easterEggModal').classList.remove('show');
+});
+document.getElementById('easterEggModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'easterEggModal') e.currentTarget.classList.remove('show');
+});
+
 function escapeHtml(str){
   const d = document.createElement('div');
   d.textContent = str;
@@ -1676,6 +1750,15 @@ function updateGauge(tasks){
   arc.style.strokeDashoffset = offset;
   arc.style.stroke = pct >= 100 ? 'var(--sage)' : pct >= 50 ? 'var(--teal)' : 'var(--amber)';
   document.getElementById('gaugeText').textContent = pct + '%';
+
+  if(pct === 100 && total > 0){
+    const celebratedKey = 'msCelebrated_' + todayStr();
+    if(!sessionStorage.getItem(celebratedKey)){
+      sessionStorage.setItem(celebratedKey, '1');
+      fireConfetti();
+      showToast('🎉 خلصت كل مهامك النهاردة! يوم قوي يا بطل 💪');
+    }
+  }
   return pct;
 }
 
@@ -2051,9 +2134,15 @@ document.getElementById('notifyBtn').addEventListener('click', async ()=>{
   registerFcmToken();
 });
 
-async function registerFcmToken(){
-  if(!firebaseReady || !currentUser) return;
-  if(!('serviceWorker' in navigator) || !firebase.messaging || !firebase.messaging.isSupported()) return;
+async function registerFcmToken(silent){
+  if(!firebaseReady || !currentUser){
+    if(!silent) showToast('⚠️ الخدمة مش متاحة دلوقتي، تأكد من الإنترنت');
+    return;
+  }
+  if(!('serviceWorker' in navigator) || !firebase.messaging || !firebase.messaging.isSupported()){
+    if(!silent) showToast('⚠️ المتصفح ده مش بيدعم إشعارات الخلفية (جرب كروم)');
+    return;
+  }
   try{
     const reg = await navigator.serviceWorker.ready;
     const messaging = firebase.messaging();
@@ -2064,15 +2153,20 @@ async function registerFcmToken(){
         platform: navigator.userAgent,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      if(!silent) showToast('✅ الجهاز اتسجل للإشعارات بنجاح');
+      console.log('MS: FCM token registered:', token.slice(0, 20) + '...');
+    } else if(!silent){
+      showToast('⚠️ محصلش على توكن — تأكد من إعدادات Cloud Messaging في Firebase');
     }
   }catch(err){
     console.error('FCM token registration failed', err);
+    if(!silent) showToast('⚠️ فشل تسجيل الجهاز: ' + (err.code || err.message || 'خطأ غير معروف'));
   }
 }
 
 // لو المستخدم كان موافق على الإشعارات بالفعل من قبل، نجدد التوكن بهدوء عند فتح اللوحة
 if(firebaseReady && 'Notification' in window && Notification.permission === 'granted'){
-  auth.onAuthStateChanged((user)=>{ if(user) registerFcmToken(); });
+  auth.onAuthStateChanged((user)=>{ if(user) registerFcmToken(true); });
 }
 
 // استقبال إشعارات الخلفية وإحنا فاتحين اللوحة فعليًا (foreground)
