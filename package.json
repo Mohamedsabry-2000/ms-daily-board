@@ -1,0 +1,12 @@
+{
+  "name": "ms-notify-worker",
+  "version": "1.0.0",
+  "description": "يفحص المهام المستحقة ويبعت إشعارات حقيقية (push) للمستخدمين حتى لو التطبيق مقفول",
+  "main": "notify.js",
+  "scripts": {
+    "start": "node notify.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.1.0"
+  }
+}
