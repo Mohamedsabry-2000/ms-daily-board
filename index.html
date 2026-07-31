@@ -2193,13 +2193,22 @@ async function notifyUser(title, body, tag){
   try{ new Notification(title, { body, tag }); }catch(e){ /* بعض الأجهزة لا تدعم هذا المسار */ }
 }
 
+function nowHHMM(){
+  const d = new Date();
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
 async function checkReminders(tasks){
   const today = todayStr();
-  const due = tasks.filter(t => !t.done && t.dueDate && t.dueDate === today && t.lastNotified !== today);
+  const currentTime = nowHHMM();
+  const due = tasks.filter(t =>
+    !t.done && t.dueDate && t.dueDate === today && t.lastNotified !== today &&
+    (!t.dueTime || t.dueTime <= currentTime)
+  );
   if(due.length === 0) return;
 
-  showToast(`لديك ${due.length} مهمة مستحقة اليوم`);
-  notifyUser('تذكير من لوحتك', `لديك ${due.length} مهمة مستحقة اليوم`, 'ms-daily-due');
+  showToast(`لديك ${due.length} مهمة مستحقة الآن`);
+  notifyUser('تذكير من لوحتك', `لديك ${due.length} مهمة مستحقة الآن`, 'ms-daily-due');
 
   for(const t of due){
     t.lastNotified = today;
