@@ -443,6 +443,91 @@
   .clock-colon{opacity:0.55; animation:colonBlink 1s steps(1) infinite; color:var(--violet);}
   @keyframes colonBlink{ 50%{opacity:0.15;} }
   .clock-caption{position:relative; z-index:1; font-size:var(--fs-sm); color:var(--text-muted); margin-top:6px; font-weight:600;}
+  .clock-ampm{font-size:1.1rem; font-weight:700; margin-right:6px; opacity:0.85;}
+
+  /* ===== Quick habits ===== */
+  .habits-section{margin-bottom:18px;}
+  .habits-head{font-size:var(--fs-md); font-weight:700; color:var(--text-muted); margin-bottom:10px;}
+  .habits-row{display:flex; flex-wrap:wrap; gap:10px;}
+  .habit-chip{
+    display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:999px;
+    border:1.5px solid var(--border); background:var(--card); cursor:pointer;
+    font-family:inherit; font-size:0.88rem; font-weight:600; color:var(--text);
+    transition: all .15s ease; box-shadow:var(--shadow);
+  }
+  .habit-chip .habit-icon{font-size:1.15rem;}
+  .habit-chip:hover{transform:translateY(-1px); box-shadow:var(--shadow-lift);}
+  .habit-chip.done{background:var(--vibrant-gradient); color:#fff; border-color:transparent;}
+  .habit-chip.done .habit-check{display:inline;}
+  .habit-chip .habit-check{display:none;}
+  .habit-chip .habit-remove{
+    background:none; border:none; cursor:pointer; font-size:0.7rem; color:inherit; opacity:0.6; padding:0 2px;
+  }
+  .habit-chip-add{
+    display:flex; align-items:center; gap:6px; padding:10px 16px; border-radius:999px;
+    border:1.5px dashed var(--border); background:transparent; cursor:pointer;
+    font-family:inherit; font-size:0.85rem; font-weight:700; color:var(--text-muted);
+  }
+  .habit-chip-add:hover{color:var(--teal); border-color:var(--teal-soft);}
+  .habit-add-row{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+  .habit-add-row input{
+    flex:1; min-width:140px; font-family:inherit; font-size:0.85rem; padding:8px 12px;
+    border:1px solid var(--border); border-radius:999px; background:var(--card-soft); color:var(--text);
+  }
+  .habit-add-row input:focus{outline:2px solid var(--teal-soft);}
+  .habit-suggestion{
+    display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:999px;
+    border:1px dashed var(--border); background:transparent; cursor:pointer;
+    font-family:inherit; font-size:0.82rem; color:var(--text-muted);
+  }
+  .habit-suggestion:hover{color:var(--teal); border-color:var(--teal-soft);}
+
+  /* ===== Page navigation ===== */
+  .page-nav{display:flex; gap:10px; margin-bottom:18px;}
+  .page-nav-btn{
+    flex:1; font-family:inherit; font-size:0.92rem; font-weight:700; padding:12px;
+    border-radius:12px; border:1.5px solid var(--border); background:var(--card); color:var(--text-muted);
+    cursor:pointer; transition:all .15s ease;
+  }
+  .page-nav-btn.active{background:var(--vibrant-gradient); color:#fff; border-color:transparent; box-shadow:var(--shadow-lift);}
+  .page-nav-btn:not(.active):hover{background:var(--card-soft); color:var(--text);}
+
+  /* ===== ADHD tools ===== */
+  .adhd-card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:20px 22px; margin-bottom:18px; box-shadow:var(--shadow);
+  }
+  .adhd-card h3{font-family:var(--font-display); font-size:var(--fs-lg); color:var(--teal); margin-bottom:6px;}
+  .adhd-hint{font-size:var(--fs-sm); color:var(--text-muted); margin-bottom:14px; line-height:1.6;}
+  .adhd-card textarea{
+    width:100%; font-family:inherit; font-size:0.9rem; padding:12px 14px; line-height:1.7;
+    border:1px solid var(--border); border-radius:12px; background:var(--card-soft); color:var(--text); resize:vertical;
+  }
+  .adhd-card textarea:focus{outline:2px solid var(--teal-soft);}
+  .adhd-row-end{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px;}
+  .journal-date-input{
+    font-family:inherit; font-size:0.85rem; padding:8px 12px; margin-bottom:10px;
+    border:1px solid var(--border); border-radius:10px; background:var(--card-soft); color:var(--text);
+  }
+
+  .bubble-grid{display:grid; grid-template-columns:repeat(8, 1fr); gap:8px;}
+  @media (max-width:500px){ .bubble-grid{grid-template-columns:repeat(6, 1fr);} }
+  .bubble{
+    aspect-ratio:1; border-radius:50%; border:none; cursor:pointer;
+    background:var(--teal-tint); box-shadow:inset 0 -3px 6px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform .12s cubic-bezier(.34,1.6,.64,1), background .2s ease, box-shadow .2s ease;
+  }
+  .bubble:hover{transform:scale(1.06);}
+  .bubble.popped{
+    background:var(--vibrant-gradient); transform:scale(0.82);
+    box-shadow:inset 0 2px 6px rgba(0,0,0,0.25);
+    animation:bubblePop .3s ease;
+  }
+  @keyframes bubblePop{
+    0%{ transform:scale(1.25); }
+    60%{ transform:scale(0.78); }
+    100%{ transform:scale(0.82); }
+  }
 
   /* ===== Mobile-first refinements ===== */
   .add-row-main{display:flex; gap:10px; align-items:center;}
@@ -590,6 +675,13 @@
     </div>
   </header>
 
+  <div class="page-nav">
+    <button class="page-nav-btn active" data-page="tasksPage">📋 مهامي</button>
+    <button class="page-nav-btn" data-page="adhdPage">🧠 ADHD</button>
+  </div>
+
+  <div id="tasksPage">
+
   <div class="today-bar">
     <div class="today-gauge">
       <svg id="gaugeSvg" width="64" height="64" viewBox="0 0 100 100">
@@ -625,8 +717,14 @@
       <span class="clock-part" id="clockMinute">--</span>
       <span class="clock-colon">:</span>
       <span class="clock-part" id="clockSecond">--</span>
+      <span class="clock-ampm" id="clockAmPm">--</span>
     </div>
     <div class="clock-caption" id="clockCaption"></div>
+  </div>
+
+  <div class="habits-section">
+    <h3 class="habits-head">⚡ عاداتك اليومية</h3>
+    <div class="habits-row" id="habitsRow"></div>
   </div>
 
   <div class="pinned">
@@ -720,6 +818,42 @@
       <div id="colFar"></div>
     </div>
   </div>
+
+  </div><!-- /tasksPage -->
+
+  <div id="adhdPage" style="display:none;">
+
+    <div class="adhd-card">
+      <h3>✍️ فرّغ اللي في دماغك</h3>
+      <p class="adhd-hint">اكتب أي حاجة شاغلة بالك دلوقتي، من غير ترتيب ومن غير حكم على نفسك. بتتحفظ أوتوماتيك.</p>
+      <textarea id="brainDumpArea" rows="6" placeholder="يلا اكتب..."></textarea>
+      <div class="adhd-row-end">
+        <span class="pin-status" id="brainDumpStatus"></span>
+        <button class="btn btn-ghost" id="clearBrainDumpBtn">امسح كل حاجة</button>
+      </div>
+    </div>
+
+    <div class="adhd-card">
+      <h3>🎮 فضفض طاقتك شوية</h3>
+      <p class="adhd-hint">فرقعة بسيطة تدّيك مخرج سريع لو حاسس إنك محتاج تعمل حركة بإيدك.</p>
+      <div class="bubble-grid" id="bubbleGrid"></div>
+      <div class="adhd-row-end">
+        <span class="pin-status" id="bubbleCounter"></span>
+        <button class="btn btn-ghost" id="refillBubblesBtn">🔄 إعادة تعبئة</button>
+      </div>
+    </div>
+
+    <div class="adhd-card">
+      <h3>📔 يومياتي</h3>
+      <p class="adhd-hint">سطرين عن يومك كفاية. اختار يوم من هنا أو سيبها على النهاردة.</p>
+      <input type="date" id="journalDate" class="journal-date-input">
+      <textarea id="journalArea" rows="6" placeholder="النهاردة كان يوم..."></textarea>
+      <div class="adhd-row-end">
+        <span class="pin-status" id="journalStatus"></span>
+      </div>
+    </div>
+
+  </div><!-- /adhdPage -->
 
   <footer>
     البيانات محفوظة محليًا على هذا الجهاز — خذ نسخة احتياطية بشكل دوري ولو بتستخدمها من أكتر من جهاز.
@@ -928,6 +1062,7 @@ function tasksCollection(){ return firestore.collection('users').doc(currentUser
 function settingsDocRef(){ return firestore.collection('users').doc(currentUser.uid).collection('meta').doc('settings'); }
 function broadcastDocRef(){ return firestore.collection('broadcast').doc('message'); }
 function backupsCollection(){ return firestore.collection('users').doc(currentUser.uid).collection('backups'); }
+function journalCollection(){ return firestore.collection('users').doc(currentUser.uid).collection('journal'); }
 
 let tasksLoaded = false;
 
@@ -968,6 +1103,10 @@ function startSettingsListener(){
     }
     if(document.activeElement !== waNumberInput){
       waNumberInput.value = settingsCache.whatsappNumber || '';
+    }
+    const brainDumpEl = document.getElementById('brainDumpArea');
+    if(brainDumpEl && document.activeElement !== brainDumpEl){
+      brainDumpEl.value = settingsCache.brainDump || '';
     }
     renderTagsUI();
     checkNameGate();
@@ -1320,7 +1459,7 @@ async function render(){
 
   const daily = [], near = [], far = [];
   tasks.forEach(t=>{
-    if(!t.dueDate){ daily.push(t); return; }
+    if(!t.dueDate){ if(!t.isHabit) daily.push(t); return; }
     const diff = daysDiff(t.dueDate);
     if(diff <= 7) near.push(t); else far.push(t);
   });
@@ -1346,6 +1485,7 @@ async function render(){
   updateGauge(all);
   updateStreak(all);
   checkReminders(all);
+  renderHabits(all);
 }
 
 function renderColumn(elId, list, emptyMsg){
@@ -1356,6 +1496,89 @@ function renderColumn(elId, list, emptyMsg){
     return;
   }
   list.forEach(t=> el.appendChild(taskCard(t)));
+}
+
+/* ============ QUICK HABITS (حاجات يومية مش لازم تبقى "مهمة" كاملة) ============ */
+const DEFAULT_HABIT_SUGGESTIONS = [
+  { icon: '🕌', label: 'الصلاة' },
+  { icon: '💧', label: 'شرب مياه' },
+  { icon: '🏋️', label: 'الجيم' },
+  { icon: '📖', label: 'قراءة' },
+  { icon: '🧘', label: 'تأمل' }
+];
+
+function renderHabits(allTasks){
+  const row = document.getElementById('habitsRow');
+  if(!row) return;
+  const habits = allTasks.filter(t => t.isHabit);
+  row.innerHTML = '';
+
+  habits.forEach(h=>{
+    const done = isTaskDone(h);
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'habit-chip' + (done ? ' done' : '');
+    chip.innerHTML = `<span class="habit-icon">${h.icon || '⭐'}</span><span>${escapeHtml(h.title)}</span><span class="habit-check">✓</span><button type="button" class="habit-remove" title="حذف العادة">✕</button>`;
+    chip.addEventListener('click', async (e)=>{
+      if(e.target.closest('.habit-remove')) return;
+      h.lastDoneDate = isTaskDone(h) ? null : todayStr();
+      await dbPut(h);
+      render();
+    });
+    chip.querySelector('.habit-remove').addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      await dbDelete(h.id);
+      showToast('اتشالت العادة');
+      render();
+    });
+    row.appendChild(chip);
+  });
+
+  // اقتراحات سريعة للعادات الشائعة اللي لسه ما ضفتهاش
+  const existingTitles = habits.map(h => h.title);
+  DEFAULT_HABIT_SUGGESTIONS.filter(s => !existingTitles.includes(s.label)).forEach(s=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'habit-suggestion';
+    btn.innerHTML = `<span>${s.icon}</span><span>+ ${s.label}</span>`;
+    btn.addEventListener('click', ()=> addHabit(s.label, s.icon));
+    row.appendChild(btn);
+  });
+
+  // زرار إضافة عادة مخصصة
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'habit-chip-add';
+  addBtn.innerHTML = '<span>➕</span><span>عادة جديدة</span>';
+  addBtn.addEventListener('click', ()=>{
+    const label = prompt('اسم العادة الجديدة؟');
+    if(label && label.trim()) addHabit(label.trim(), '⭐');
+  });
+  row.appendChild(addBtn);
+}
+
+async function addHabit(label, icon){
+  const habit = {
+    id: uid(),
+    title: label,
+    icon,
+    isHabit: true,
+    note: '',
+    dueDate: null,
+    dueTime: null,
+    priority: 'medium',
+    done: false,
+    createdAt: Date.now(),
+    lastNotified: null
+  };
+  try{
+    await dbPut(habit);
+    render();
+    showToast(`اتضافت عادة "${label}" ✓`);
+  }catch(err){
+    console.error(err);
+    showToast('حصلت مشكلة في الإضافة');
+  }
 }
 
 function taskCard(t){
@@ -2001,6 +2224,101 @@ if('serviceWorker' in navigator){
 }
 
 /* ============ INIT ============ */
+/* ============ PAGE NAVIGATION ============ */
+document.querySelectorAll('.page-nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.page-nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tasksPage').style.display = btn.dataset.page === 'tasksPage' ? 'block' : 'none';
+    document.getElementById('adhdPage').style.display = btn.dataset.page === 'adhdPage' ? 'block' : 'none';
+  });
+});
+
+/* ============ ADHD: BRAIN DUMP ============ */
+const brainDumpArea = document.getElementById('brainDumpArea');
+const brainDumpStatus = document.getElementById('brainDumpStatus');
+let brainDumpTimer;
+brainDumpArea.addEventListener('input', ()=>{
+  brainDumpStatus.textContent = 'بيتحفظ...';
+  clearTimeout(brainDumpTimer);
+  brainDumpTimer = setTimeout(()=>{
+    updateSettings({ brainDump: brainDumpArea.value });
+    brainDumpStatus.textContent = 'اتحفظ ✓';
+    setTimeout(()=> brainDumpStatus.textContent = '', 1500);
+  }, 500);
+});
+document.getElementById('clearBrainDumpBtn').addEventListener('click', ()=>{
+  brainDumpArea.value = '';
+  updateSettings({ brainDump: '' });
+  showToast('اتمسح كل حاجة، صفحة جديدة 🌿');
+});
+
+/* ============ ADHD: BUBBLE POP FIDGET GAME ============ */
+const BUBBLE_COUNT = 48;
+let bubblePopCount = 0;
+function buildBubbles(){
+  const grid = document.getElementById('bubbleGrid');
+  grid.innerHTML = '';
+  for(let i = 0; i < BUBBLE_COUNT; i++){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'bubble';
+    b.setAttribute('aria-label', 'فرقعة');
+    b.addEventListener('click', ()=>{
+      if(b.classList.contains('popped')) return;
+      b.classList.add('popped');
+      bubblePopCount++;
+      updateBubbleCounter();
+    });
+    grid.appendChild(b);
+  }
+  bubblePopCount = 0;
+  updateBubbleCounter();
+}
+function updateBubbleCounter(){
+  document.getElementById('bubbleCounter').textContent = bubblePopCount > 0 ? `فرقعت ${bubblePopCount} من ${BUBBLE_COUNT}` : '';
+}
+document.getElementById('refillBubblesBtn').addEventListener('click', buildBubbles);
+buildBubbles();
+
+/* ============ ADHD: DAILY JOURNAL ============ */
+const journalDateInput = document.getElementById('journalDate');
+const journalArea = document.getElementById('journalArea');
+const journalStatus = document.getElementById('journalStatus');
+let journalTimer;
+
+journalDateInput.value = todayStr();
+
+async function loadJournalEntry(dateStr){
+  if(!firebaseReady || !currentUser){ journalArea.value = ''; return; }
+  try{
+    const doc = await journalCollection().doc(dateStr).get();
+    journalArea.value = doc.exists ? (doc.data().text || '') : '';
+  }catch(err){ console.error(err); }
+}
+journalDateInput.addEventListener('change', ()=> loadJournalEntry(journalDateInput.value));
+
+journalArea.addEventListener('input', ()=>{
+  journalStatus.textContent = 'بيتحفظ...';
+  clearTimeout(journalTimer);
+  journalTimer = setTimeout(async ()=>{
+    if(!firebaseReady || !currentUser) return;
+    try{
+      await journalCollection().doc(journalDateInput.value).set({
+        text: journalArea.value,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      journalStatus.textContent = 'اتحفظ ✓';
+      setTimeout(()=> journalStatus.textContent = '', 1500);
+    }catch(err){ console.error(err); }
+  }, 600);
+});
+
+// نحمّل يوميات النهاردة أول ما المستخدم يسجل دخوله
+if(firebaseReady){
+  auth.onAuthStateChanged((user)=>{ if(user) loadJournalEntry(journalDateInput.value); });
+}
+
 function setTodayLabel(){
   const d = new Date();
   const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
@@ -2011,20 +2329,24 @@ function setTodayLabel(){
 let lastClockParts = { h: '', m: '', s: '' };
 function tickClock(){
   const d = new Date();
-  const h = String(d.getHours()).padStart(2, '0');
+  const hourNum = d.getHours();
+  const hour12 = hourNum % 12 === 0 ? 12 : hourNum % 12;
+  const h = String(hour12).padStart(2, '0');
   const m = String(d.getMinutes()).padStart(2, '0');
   const s = String(d.getSeconds()).padStart(2, '0');
+  const ampm = hourNum < 12 ? 'ص' : 'م';
 
   const hourEl = document.getElementById('clockHour');
   const minEl = document.getElementById('clockMinute');
   const secEl = document.getElementById('clockSecond');
+  const ampmEl = document.getElementById('clockAmPm');
 
   if(h !== lastClockParts.h){ hourEl.textContent = h; bumpTick(hourEl); }
   if(m !== lastClockParts.m){ minEl.textContent = m; bumpTick(minEl); }
   if(s !== lastClockParts.s){ secEl.textContent = s; bumpTick(secEl); }
+  if(ampmEl) ampmEl.textContent = ampm;
   lastClockParts = { h, m, s };
 
-  const hourNum = d.getHours();
   let caption;
   if(hourNum >= 5 && hourNum < 12) caption = 'صباح الخير ☀️';
   else if(hourNum >= 12 && hourNum < 17) caption = 'نهارك سعيد 🌤️';
