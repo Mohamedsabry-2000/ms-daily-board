@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ms-tasks-v24';
+const CACHE_NAME = 'ms-tasks-v28';
 const ASSETS = [
   './index.html', './manifest.json', './icon-192.png', './icon-512.png', './logo-header.png',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
@@ -31,7 +31,10 @@ try{
       badge: 'icon-192.png',
       dir: 'rtl',
       lang: 'ar',
-      tag: 'ms-fcm-reminder'
+      tag: 'ms-fcm-reminder',
+      renotify: true,
+      vibrate: [200, 100, 200],
+      requireInteraction: true
     });
   });
 }catch(err){ /* بعض المتصفحات لا تدعم Messaging جوه الـ service worker، متجاهلينها بأمان */ }
@@ -67,7 +70,10 @@ self.addEventListener('message', (e) => {
       icon: 'icon-192.png',
       badge: 'icon-192.png',
       dir: 'rtl',
-      lang: 'ar'
+      lang: 'ar',
+      renotify: true,
+      vibrate: [200, 100, 200],
+      requireInteraction: true
     });
   }
 });

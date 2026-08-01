@@ -249,7 +249,7 @@
   }
   .add-bar h2{font-size:1rem; font-weight:700; margin-bottom:14px; color:var(--teal);}
   .add-grid{
-    display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; align-items:end;
+    display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; align-items:end;
   }
   .field label{display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:5px; font-weight:600;}
   .field input, .field select{
@@ -401,6 +401,20 @@
   .summary-bar.has-data{background:var(--teal);}
   .summary-bar-label{font-size:0.65rem; color:var(--text-muted);}
 
+  .habit-history-loading{font-size:var(--fs-sm); color:var(--text-muted); text-align:center; padding:10px 0;}
+  .habit-history-row{
+    display:flex; align-items:center; gap:8px; padding:8px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .habit-history-row:last-child{border-bottom:none;}
+  .habit-history-name{flex:0 0 auto; font-size:0.82rem; font-weight:600; min-width:110px;}
+  .habit-history-dots{display:flex; gap:4px; flex:1; justify-content:center;}
+  .habit-history-dot{
+    width:16px; height:16px; border-radius:50%; background:var(--card-soft); border:1px solid var(--border);
+  }
+  .habit-history-dot.done{background:var(--vibrant-gradient); border-color:transparent;}
+  .habit-history-count{flex:0 0 auto; font-size:0.75rem; color:var(--text-muted); font-weight:700; min-width:32px; text-align:left;}
+
   /* ===== Broadcast banner (admin announcement) ===== */
   .broadcast-banner{
     display:flex; align-items:center; gap:10px;
@@ -513,6 +527,24 @@
   .voice-journal-status{
     min-height:20px; font-size:var(--fs-sm); color:var(--text-muted); margin-bottom:10px; line-height:1.6;
   }
+
+  .focus-task-row select{
+    width:100%; font-family:inherit; font-size:0.85rem; padding:9px 12px; margin-bottom:14px;
+    border:1px solid var(--border); border-radius:10px; background:var(--card-soft); color:var(--text);
+  }
+  .focus-timer-display{
+    text-align:center; font-family:var(--font-display); font-size:2.8rem; font-weight:700;
+    background:var(--vibrant-gradient); -webkit-background-clip:text; background-clip:text; color:transparent;
+    margin-bottom:14px; direction:ltr;
+  }
+  .focus-presets{display:flex; gap:8px; margin-bottom:14px;}
+  .focus-preset-btn{
+    flex:1; font-family:inherit; font-size:0.85rem; font-weight:700; padding:9px;
+    border-radius:10px; border:1.5px solid var(--border); background:var(--card-soft); color:var(--text-muted);
+    cursor:pointer;
+  }
+  .focus-preset-btn.active{background:var(--vibrant-gradient); color:#fff; border-color:transparent;}
+  .focus-preset-btn:disabled{opacity:0.5; cursor:not-allowed;}
   #voiceJournalBtn.recording{
     background:var(--coral); animation:recordPulse 1.4s ease-in-out infinite;
   }
@@ -819,6 +851,15 @@
             <option value="">بدون تصنيف</option>
           </select>
         </div>
+        <div class="field">
+          <label for="taskReminderLead">التذكير (لو له وقت)</label>
+          <select id="taskReminderLead">
+            <option value="0">في الميعاد بالظبط</option>
+            <option value="15">قبلها بـ 15 دقيقة</option>
+            <option value="30">قبلها بـ 30 دقيقة</option>
+            <option value="60">قبلها بساعة</option>
+          </select>
+        </div>
       </div>
       <div class="field note-row">
         <label for="taskNote">ملاحظة (اختياري)</label>
@@ -872,6 +913,24 @@
       <div class="adhd-row-end">
         <span class="pin-status" id="bubbleCounter"></span>
         <button class="btn btn-ghost" id="refillBubblesBtn">🔄 إعادة تعبئة</button>
+      </div>
+    </div>
+
+    <div class="adhd-card">
+      <h3>⏱️ مؤقت التركيز</h3>
+      <p class="adhd-hint">اختار مدة، ركّز على حاجة واحدة بس لحد ما تخلص، وسيب اللوحة تفكّرك بالباقي.</p>
+      <div class="focus-task-row">
+        <select id="focusTaskSelect"><option value="">من غير ربط بمهمة معينة</option></select>
+      </div>
+      <div class="focus-timer-display" id="focusTimerDisplay">25:00</div>
+      <div class="focus-presets" id="focusPresets">
+        <button type="button" class="focus-preset-btn" data-mins="5">5 د</button>
+        <button type="button" class="focus-preset-btn active" data-mins="25">25 د</button>
+        <button type="button" class="focus-preset-btn" data-mins="45">45 د</button>
+      </div>
+      <div class="adhd-row-end">
+        <button class="btn btn-ghost" id="focusResetBtn">إعادة ضبط</button>
+        <button class="btn btn-primary" id="focusStartBtn" style="flex:1; justify-content:center;">▶️ ابدأ</button>
       </div>
     </div>
 
@@ -1116,6 +1175,7 @@ function settingsDocRef(){ return firestore.collection('users').doc(currentUser.
 function broadcastDocRef(){ return firestore.collection('broadcast').doc('message'); }
 function backupsCollection(){ return firestore.collection('users').doc(currentUser.uid).collection('backups'); }
 function journalCollection(){ return firestore.collection('users').doc(currentUser.uid).collection('journal'); }
+function habitLogsCollection(){ return firestore.collection('users').doc(currentUser.uid).collection('habitLogs'); }
 
 let tasksLoaded = false;
 
@@ -1374,6 +1434,32 @@ function computeWeeklySummary(){
   return { days, weekDone, weekTotal, weekRate, overdueCount, addedThisWeek, streak };
 }
 
+async function fetchHabitWeeklyHistory(days){
+  const habits = tasksCache.filter(t => t.isHabit);
+  if(habits.length === 0 || !firebaseReady || !currentUser) return [];
+
+  const weekAgoStr = days[0].dateStr;
+  let logsSnap;
+  try{
+    logsSnap = await habitLogsCollection().where('date', '>=', weekAgoStr).get();
+  }catch(err){
+    console.error('habit history fetch failed', err);
+    return habits.map(h => ({ habit: h, marks: days.map(()=>false) }));
+  }
+
+  const logsByHabit = {};
+  logsSnap.forEach(doc => {
+    const d = doc.data();
+    if(!logsByHabit[d.habitId]) logsByHabit[d.habitId] = {};
+    logsByHabit[d.habitId][d.date] = d.done;
+  });
+
+  return habits.map(h => ({
+    habit: h,
+    marks: days.map(day => !!(logsByHabit[h.id] && logsByHabit[h.id][day.dateStr]))
+  }));
+}
+
 function renderWeeklySummary(){
   const s = computeWeeklySummary();
   const maxCount = Math.max(1, ...s.days.map(d => d.totalCount));
@@ -1410,7 +1496,34 @@ function renderWeeklySummary(){
       <div class="label" style="font-size:var(--fs-sm); color:var(--text-muted); margin-bottom:4px;">المواعيد المنجزة يوميًا (آخر 7 أيام)</div>
       <div class="summary-bars">${barsHtml}</div>
     </div>
+    <div id="habitHistorySection">
+      <div class="label" style="font-size:var(--fs-sm); color:var(--text-muted); margin-bottom:8px;">⚡ عاداتك آخر 7 أيام</div>
+      <div class="habit-history-loading">بيتحمّل...</div>
+    </div>
   `;
+
+  fetchHabitWeeklyHistory(s.days).then(history=>{
+    const section = document.getElementById('habitHistorySection');
+    if(!section) return;
+    if(history.length === 0){
+      section.querySelector('.habit-history-loading').textContent = 'لسه معملتش عادات — ضيف واحدة من صفحة المهام';
+      return;
+    }
+    const rowsHtml = history.map(({ habit, marks })=>{
+      const dotsHtml = marks.map((done, i) => `<span class="habit-history-dot ${done ? 'done' : ''}" title="${s.days[i].dayLabel}"></span>`).join('');
+      const doneCount = marks.filter(Boolean).length;
+      return `
+        <div class="habit-history-row">
+          <span class="habit-history-name">${habit.icon || '⭐'} ${escapeHtml(habit.title)}</span>
+          <div class="habit-history-dots">${dotsHtml}</div>
+          <span class="habit-history-count">${doneCount}/7</span>
+        </div>`;
+    }).join('');
+    section.innerHTML = `
+      <div class="label" style="font-size:var(--fs-sm); color:var(--text-muted); margin-bottom:8px;">⚡ عاداتك آخر 7 أيام</div>
+      ${rowsHtml}
+    `;
+  });
 }
 
 document.getElementById('weeklySummaryBtn').addEventListener('click', ()=>{
@@ -1539,6 +1652,8 @@ async function render(){
   updateStreak(all);
   checkReminders(all);
   renderHabits(all);
+  updateAppBadge(all);
+  refreshFocusTaskOptions();
 }
 
 function renderColumn(elId, list, emptyMsg){
@@ -1574,8 +1689,10 @@ function renderHabits(allTasks){
     chip.innerHTML = `<span class="habit-icon">${h.icon || '⭐'}</span><span>${escapeHtml(h.title)}</span><span class="habit-check">✓</span><button type="button" class="habit-remove" title="حذف العادة">✕</button>`;
     chip.addEventListener('click', async (e)=>{
       if(e.target.closest('.habit-remove')) return;
-      h.lastDoneDate = isTaskDone(h) ? null : todayStr();
+      const wasDone = isTaskDone(h);
+      h.lastDoneDate = wasDone ? null : todayStr();
       await dbPut(h);
+      await logHabitCompletion(h.id, todayStr(), !wasDone);
       render();
     });
     chip.querySelector('.habit-remove').addEventListener('click', async (e)=>{
@@ -1632,6 +1749,16 @@ async function addHabit(label, icon){
     console.error(err);
     showToast('حصلت مشكلة في الإضافة');
   }
+}
+
+async function logHabitCompletion(habitId, dateStr, done){
+  if(!firebaseReady || !currentUser) return;
+  try{
+    await habitLogsCollection().doc(`${habitId}_${dateStr}`).set({
+      habitId, date: dateStr, done,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(err){ console.error('habit log failed', err); }
 }
 
 function taskCard(t){
@@ -1956,6 +2083,7 @@ async function saveTask(){
     dueTime,
     priority,
     tag: document.getElementById('taskTag').value || null,
+    reminderLead: parseInt(document.getElementById('taskReminderLead').value, 10) || 0,
     done: false,
     createdAt: Date.now(),
     lastNotified: null
@@ -1989,6 +2117,7 @@ function startEdit(t){
   document.getElementById('taskTime').value = t.dueTime || '';
   document.getElementById('taskPriority').value = t.priority;
   document.getElementById('taskTag').value = t.tag || '';
+  document.getElementById('taskReminderLead').value = String(t.reminderLead || 0);
   document.getElementById('formTitle').textContent = '✏️ تعديل المهمة';
   document.getElementById('editRow').style.display = 'block';
   expandAddMore();
@@ -2005,6 +2134,7 @@ function resetForm(){
   document.getElementById('taskTime').value = '';
   document.getElementById('taskPriority').value = 'medium';
   document.getElementById('taskTag').value = '';
+  document.getElementById('taskReminderLead').value = '0';
   document.getElementById('formTitle').textContent = '➕ إضافة مهمة جديدة';
   document.getElementById('editRow').style.display = 'none';
   addMore.classList.remove('expanded');
@@ -2221,13 +2351,26 @@ function nowHHMM(){
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
+// بيحسب "وقت التنبيه الفعلي" بطرح مدة التذكير المسبق من وقت الميعاد
+function subtractMinutes(hhmm, minutes){
+  if(!minutes) return hhmm;
+  const [h, m] = hhmm.split(':').map(Number);
+  let total = h * 60 + m - minutes;
+  if(total < 0) total = 0; // لو الطرح رجّعنا لليوم اللي فات، نعتبره مستحق من بداية اليوم
+  const nh = Math.floor(total / 60) % 24;
+  const nm = total % 60;
+  return String(nh).padStart(2, '0') + ':' + String(nm).padStart(2, '0');
+}
+
 async function checkReminders(tasks){
   const today = todayStr();
   const currentTime = nowHHMM();
-  const due = tasks.filter(t =>
-    !t.done && t.dueDate && t.dueDate === today && t.lastNotified !== today &&
-    (!t.dueTime || t.dueTime <= currentTime)
-  );
+  const due = tasks.filter(t => {
+    if(t.done || !t.dueDate || t.dueDate !== today || t.lastNotified === today) return false;
+    if(!t.dueTime) return true;
+    const notifyAt = subtractMinutes(t.dueTime, t.reminderLead || 0);
+    return notifyAt <= currentTime;
+  });
   if(due.length === 0) return;
 
   showToast(`لديك ${due.length} مهمة مستحقة الآن`);
@@ -2237,6 +2380,19 @@ async function checkReminders(tasks){
     t.lastNotified = today;
     await dbPut(t);
   }
+}
+
+/* ============ APP BADGE (رقم على أيقونة التطبيق زي واتساب) ============ */
+function updateAppBadge(tasks){
+  if(!('setAppBadge' in navigator)) return;
+  const today = todayStr();
+  const attentionCount = tasks.filter(t =>
+    !isTaskDone(t) && t.dueDate && (t.dueDate === today || daysDiff(t.dueDate) < 0)
+  ).length;
+  try{
+    if(attentionCount > 0) navigator.setAppBadge(attentionCount);
+    else navigator.clearAppBadge();
+  }catch(err){ /* بعض المتصفحات لا تدعم الميزة دي، متجاهلينها بأمان */ }
 }
 
 /* ============ BACKUP / RESTORE ============ */
@@ -2378,6 +2534,98 @@ document.getElementById('clearBrainDumpBtn').addEventListener('click', ()=>{
   updateSettings({ brainDump: '' });
   showToast('اتمسح كل حاجة، صفحة جديدة 🌿');
 });
+
+/* ============ ADHD: FOCUS TIMER (بومودورو) ============ */
+let focusSecondsLeft = 25 * 60;
+let focusTotalSeconds = 25 * 60;
+let focusInterval = null;
+let focusRunning = false;
+
+function formatFocusTime(totalSeconds){
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+function updateFocusDisplay(){
+  document.getElementById('focusTimerDisplay').textContent = formatFocusTime(focusSecondsLeft);
+}
+
+document.querySelectorAll('.focus-preset-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(focusRunning) return;
+    document.querySelectorAll('.focus-preset-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    focusTotalSeconds = parseInt(btn.dataset.mins, 10) * 60;
+    focusSecondsLeft = focusTotalSeconds;
+    updateFocusDisplay();
+  });
+});
+
+document.getElementById('focusStartBtn').addEventListener('click', ()=>{
+  const btn = document.getElementById('focusStartBtn');
+  if(focusRunning){
+    // إيقاف مؤقت
+    clearInterval(focusInterval);
+    focusRunning = false;
+    btn.textContent = '▶️ كمّل';
+    return;
+  }
+  focusRunning = true;
+  btn.textContent = '⏸️ إيقاف مؤقت';
+  document.querySelectorAll('.focus-preset-btn').forEach(b => b.disabled = true);
+  focusInterval = setInterval(()=>{
+    focusSecondsLeft--;
+    updateFocusDisplay();
+    if(focusSecondsLeft <= 0){
+      clearInterval(focusInterval);
+      focusRunning = false;
+      onFocusSessionComplete();
+    }
+  }, 1000);
+});
+
+document.getElementById('focusResetBtn').addEventListener('click', ()=>{
+  clearInterval(focusInterval);
+  focusRunning = false;
+  document.getElementById('focusStartBtn').textContent = '▶️ ابدأ';
+  document.querySelectorAll('.focus-preset-btn').forEach(b => b.disabled = false);
+  focusSecondsLeft = focusTotalSeconds;
+  updateFocusDisplay();
+});
+
+async function onFocusSessionComplete(){
+  document.getElementById('focusStartBtn').textContent = '▶️ ابدأ';
+  document.querySelectorAll('.focus-preset-btn').forEach(b => b.disabled = false);
+  fireConfetti(50);
+  showToast('🎉 خلصت جلسة تركيز! خد بريك صغير');
+  notifyUser('⏱️ خلصت جلسة التركيز', 'وقت البريك يا بطل 🎉', 'ms-focus-done');
+
+  const taskId = document.getElementById('focusTaskSelect').value;
+  if(taskId){
+    const task = tasksCache.find(t => t.id === taskId);
+    if(task && confirm(`خلصت "${task.title}"؟`)){
+      if(!task.dueDate) task.lastDoneDate = todayStr();
+      else task.done = true;
+      await dbPut(task);
+      render();
+    }
+  }
+  focusSecondsLeft = focusTotalSeconds;
+  updateFocusDisplay();
+}
+
+function refreshFocusTaskOptions(){
+  const select = document.getElementById('focusTaskSelect');
+  if(!select || focusRunning) return;
+  const currentVal = select.value;
+  const today = todayStr();
+  const candidates = tasksCache.filter(t => !isTaskDone(t) && (!t.dueDate || t.dueDate === today));
+  select.innerHTML = '<option value="">من غير ربط بمهمة معينة</option>' +
+    candidates.map(t => `<option value="${t.id}">${t.icon ? t.icon + ' ' : ''}${escapeHtml(t.title)}</option>`).join('');
+  if(candidates.some(t => t.id === currentVal)) select.value = currentVal;
+}
+
+updateFocusDisplay();
 
 /* ============ ADHD: BUBBLE POP FIDGET GAME ============ */
 const BUBBLE_COUNT = 48;

@@ -37,6 +37,17 @@ function nowHHMM(){
   return `${map.hour}:${map.minute}`;
 }
 
+// بيحسب "وقت التنبيه الفعلي" بطرح مدة التذكير المسبق من وقت الميعاد (نفس منطق التطبيق بالظبط)
+function subtractMinutes(hhmm, minutes){
+  if(!minutes) return hhmm;
+  const [h, m] = hhmm.split(':').map(Number);
+  let total = h * 60 + m - minutes;
+  if(total < 0) total = 0;
+  const nh = Math.floor(total / 60) % 24;
+  const nm = total % 60;
+  return String(nh).padStart(2, '0') + ':' + String(nm).padStart(2, '0');
+}
+
 async function main(){
   const today = todayStr();
   const currentTime = nowHHMM();
@@ -62,7 +73,10 @@ async function main(){
         // مهمة بتاريخ محدد: تتفحص بتاريخها ووقتها وحالة الإنجاز العادية
         if(t.dueDate !== today) return;
         if(t.done) return;
-        if(t.dueTime && t.dueTime > currentTime) return;
+        if(t.dueTime){
+          const notifyAt = subtractMinutes(t.dueTime, t.reminderLead || 0);
+          if(notifyAt > currentTime) return;
+        }
       } else {
         // مهمة يومية متكررة أو عادة: تتفحص بـ lastDoneDate (بترجع "مش خلصانة" كل يوم جديد)
         if(t.lastDoneDate === today) return;
@@ -87,8 +101,8 @@ async function main(){
         tokens,
         notification: { title, body },
         webpush: {
-          fcmOptions: { link: 'https://YOUR_USERNAME.github.io/ms-daily-board/' },
-          notification: { icon: 'https://YOUR_USERNAME.github.io/ms-daily-board/icon-192.png' }
+          fcmOptions: { link: 'https://Mohamedsabry-2000.github.io/ms-daily-board/' },
+          notification: { icon: 'https://Mohamedsabry-2000.github.io/ms-daily-board/icon-192.png' }
         }
       });
       console.log(`اتبعت لـ ${uid}: ${response.successCount} نجح، ${response.failureCount} فشل`);
