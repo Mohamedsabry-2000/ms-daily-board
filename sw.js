@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ms-tasks-v22';
+const CACHE_NAME = 'ms-tasks-v24';
 const ASSETS = [
   './index.html', './manifest.json', './icon-192.png', './icon-512.png', './logo-header.png',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',

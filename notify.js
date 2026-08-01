@@ -14,15 +14,27 @@ admin.initializeApp({
 const db = admin.firestore();
 const messaging = admin.messaging();
 
+// GitHub Actions بيشغّل السكريبت بتوقيت UTC، لكن مواعيدك متسجلة بتوقيت القاهرة —
+// من غير التحويل ده، أي مقارنة للوقت هتبقى غلط بفارق ساعتين أو أكتر.
+const CAIRO_TZ = 'Africa/Cairo';
+
 function todayStr(){
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: CAIRO_TZ, year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date());
+  const map = {};
+  parts.forEach(p => { map[p.type] = p.value; });
+  return `${map.year}-${map.month}-${map.day}`;
 }
 
-// وقت الجرد الحالي بصيغة HH:MM، عشان نقارنه بوقت المهمة (dueTime) لو محدد
+// وقت الجرد الحالي بصيغة HH:MM بتوقيت القاهرة، عشان نقارنه بوقت المهمة (dueTime) لو محدد
 function nowHHMM(){
-  const d = new Date();
-  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: CAIRO_TZ, hour: '2-digit', minute: '2-digit', hour12: false
+  }).formatToParts(new Date());
+  const map = {};
+  parts.forEach(p => { map[p.type] = p.value; });
+  return `${map.hour}:${map.minute}`;
 }
 
 async function main(){

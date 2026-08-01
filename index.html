@@ -510,6 +510,17 @@
     border:1px solid var(--border); border-radius:10px; background:var(--card-soft); color:var(--text);
   }
 
+  .voice-journal-status{
+    min-height:20px; font-size:var(--fs-sm); color:var(--text-muted); margin-bottom:10px; line-height:1.6;
+  }
+  #voiceJournalBtn.recording{
+    background:var(--coral); animation:recordPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes recordPulse{
+    0%, 100%{ box-shadow:0 0 0 0 rgba(193,89,75,0.4); }
+    50%{ box-shadow:0 0 0 10px rgba(193,89,75,0); }
+  }
+
   .bubble-grid{display:grid; grid-template-columns:repeat(8, 1fr); gap:8px;}
   @media (max-width:500px){ .bubble-grid{grid-template-columns:repeat(6, 1fr);} }
   .bubble{
@@ -862,6 +873,13 @@
         <span class="pin-status" id="bubbleCounter"></span>
         <button class="btn btn-ghost" id="refillBubblesBtn">🔄 إعادة تعبئة</button>
       </div>
+    </div>
+
+    <div class="adhd-card">
+      <h3>🎙️ احكي عن يومك</h3>
+      <p class="adhd-hint">احكي عن يومك عادي من الأول للآخر — كويس ووحش، مفيش ترتيب مطلوب. إحنا هنلخصه في يومياتك، ولو ذكرت أي ميعاد أو حاجة لازم تتعمل، هتتحط في المهام لوحدها.</p>
+      <div class="voice-journal-status" id="voiceJournalStatus"></div>
+      <button class="btn btn-primary" id="voiceJournalBtn" style="width:100%; justify-content:center;">🎙️ ابدأ الحكي</button>
     </div>
 
     <div class="adhd-card">
@@ -2144,7 +2162,9 @@ async function registerFcmToken(silent){
     return;
   }
   try{
-    const reg = await navigator.serviceWorker.ready;
+    const swReady = navigator.serviceWorker.ready;
+    const timeout = new Promise((_, reject) => setTimeout(()=> reject(new Error('timeout')), 8000));
+    const reg = await Promise.race([swReady, timeout]);
     const messaging = firebase.messaging();
     const token = await messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg });
     if(token){
@@ -2160,7 +2180,10 @@ async function registerFcmToken(silent){
     }
   }catch(err){
     console.error('FCM token registration failed', err);
-    if(!silent) showToast('⚠️ فشل تسجيل الجهاز: ' + (err.code || err.message || 'خطأ غير معروف'));
+    if(!silent){
+      const msg = err.message === 'timeout' ? 'الـ service worker مش بيرد — جرب تحدّث الصفحة' : (err.code || err.message || 'خطأ غير معروف');
+      showToast('⚠️ فشل تسجيل الجهاز: ' + msg);
+    }
   }
 }
 
@@ -2420,6 +2443,143 @@ journalArea.addEventListener('input', ()=>{
 // نحمّل يوميات النهاردة أول ما المستخدم يسجل دخوله
 if(firebaseReady){
   auth.onAuthStateChanged((user)=>{ if(user) loadJournalEntry(journalDateInput.value); });
+}
+
+/* ============ ADHD: VOICE JOURNAL (حكي صوتي بيترتب نفسه) ============ */
+(function setupVoiceJournal(){
+  const btn = document.getElementById('voiceJournalBtn');
+  const statusEl = document.getElementById('voiceJournalStatus');
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if(!SpeechRecognitionAPI){
+    btn.style.display = 'none';
+    statusEl.textContent = 'المتصفح ده مش بيدعم الحكي الصوتي، جرب من كروم';
+    return;
+  }
+
+  const recognition = new SpeechRecognitionAPI();
+  recognition.lang = 'ar-EG';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  let isListening = false;
+  let finalTranscript = '';
+
+  recognition.onstart = ()=>{
+    isListening = true;
+    finalTranscript = '';
+    btn.textContent = '⏹️ خلصت، رتبها لي';
+    btn.classList.add('recording');
+    statusEl.textContent = 'بيسمعك... احكي براحتك 🎙️';
+  };
+
+  recognition.onresult = (e)=>{
+    let interim = '';
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      if(e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    const preview = (finalTranscript + interim).trim();
+    statusEl.textContent = preview ? '🎙️ ' + preview.slice(-140) : 'بيسمعك...';
+  };
+
+  recognition.onerror = (e)=>{
+    isListening = false;
+    btn.textContent = '🎙️ ابدأ الحكي';
+    btn.classList.remove('recording');
+    if(e.error === 'not-allowed'){ statusEl.textContent = '⚠️ محتاجين إذن الميكروفون عشان الميزة دي تشتغل'; }
+    else if(e.error !== 'aborted' && e.error !== 'no-speech'){ statusEl.textContent = '⚠️ حصلت مشكلة، جرب تاني'; }
+    else if(e.error === 'no-speech'){ statusEl.textContent = ''; }
+  };
+
+  recognition.onend = async ()=>{
+    isListening = false;
+    btn.classList.remove('recording');
+    btn.textContent = '🎙️ ابدأ الحكي';
+    const transcript = finalTranscript.trim();
+    finalTranscript = '';
+    if(!transcript){ statusEl.textContent = ''; return; }
+
+    btn.disabled = true;
+    statusEl.textContent = '🧠 بنرتب كلامك...';
+    await processVoiceJournal(transcript);
+    btn.disabled = false;
+  };
+
+  btn.addEventListener('click', ()=>{
+    if(isListening){ recognition.stop(); return; }
+    try{ recognition.start(); }catch(e){ /* شغالة بالفعل، نتجاهل */ }
+  });
+})();
+
+async function processVoiceJournal(transcript){
+  const statusEl = document.getElementById('voiceJournalStatus');
+  const today = todayStr();
+
+  const prompt = `النهاردة تاريخه ${today} بصيغة YYYY-MM-DD. الشخص ده حكى عن يومه بالصوت، وده النص اللي اتسجل (ممكن يكون فيه أخطاء بسيطة من التعرف الصوتي):
+
+"""
+${transcript}
+"""
+
+مطلوب منك حاجتين بالظبط:
+1. لخّص يومه في نقط قصيرة بالعربي المصري (كل نقطة تبدأ بـ • في سطر جديد)، تغطي الحاجات الإيجابية والسلبية اللي اتقالت، بأسلوب داعم ومختصر من غير أي حكم على الشخص.
+2. استخرج أي مهام أو مواعيد مستقبلية محتاجة تتسجل (لو اتذكر أي حاجة لازم تتعمل أو ميعاد قادم). لو مفيش، رجّع مصفوفة فاضية. احسب أي تاريخ نسبي ("بكرة"، "الأسبوع الجاي") بالنسبة لتاريخ النهاردة المذكور فوق.
+
+رد بصيغة JSON فقط، من غير أي مقدمة أو Markdown أو علامات كود، بالظبط بالشكل ده:
+{"journalSummary":"النص هنا","tasks":[{"title":"...","dueDate":"YYYY-MM-DD أو null","dueTime":"HH:MM أو null بصيغة 24 ساعة","priority":"high أو medium أو low"}]}`;
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const textBlock = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+    const cleaned = textBlock.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+
+    // حفظ التلخيص في يوميات النهاردة (نضيفه لو فيه محتوى موجود بالفعل)
+    const existing = journalArea.value.trim() ? journalArea.value.trim() + '\n\n' : '';
+    const combined = existing + (parsed.journalSummary || '');
+    journalDateInput.value = today;
+    journalArea.value = combined;
+    if(firebaseReady && currentUser){
+      await journalCollection().doc(today).set({
+        text: combined,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    // إضافة أي مهام مستخرجة تلقائيًا
+    let addedCount = 0;
+    for(const t of (parsed.tasks || [])){
+      if(!t.title) continue;
+      await dbPut({
+        id: uid(),
+        title: t.title,
+        note: '',
+        dueDate: t.dueDate || null,
+        dueTime: t.dueTime || null,
+        priority: t.priority || 'medium',
+        done: false,
+        createdAt: Date.now(),
+        lastNotified: null
+      });
+      addedCount++;
+    }
+    render();
+    statusEl.textContent = addedCount > 0
+      ? `✅ اتسجلت يومياتك، وضفنا ${addedCount} ${addedCount === 1 ? 'مهمة جديدة' : 'مهام جديدة'}`
+      : '✅ اتسجلت يومياتك';
+  }catch(err){
+    console.error('voice journal processing failed', err);
+    statusEl.textContent = '⚠️ حصلت مشكلة في الترتيب، جرب تاني';
+  }
 }
 
 function setTodayLabel(){
