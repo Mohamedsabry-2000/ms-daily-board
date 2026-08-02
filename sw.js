@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ms-tasks-v28';
+const CACHE_NAME = 'ms-tasks-v30';
 const ASSETS = [
   './index.html', './manifest.json', './icon-192.png', './icon-512.png', './logo-header.png',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
@@ -25,6 +25,7 @@ try{
   messaging.onBackgroundMessage((payload) => {
     const title = (payload.notification && payload.notification.title) || 'تذكير من لوحتك';
     const body = (payload.notification && payload.notification.body) || '';
+    const clickUrl = (payload.fcmOptions && payload.fcmOptions.link) || './index.html';
     self.registration.showNotification(title, {
       body,
       icon: 'icon-192.png',
@@ -34,14 +35,23 @@ try{
       tag: 'ms-fcm-reminder',
       renotify: true,
       vibrate: [200, 100, 200],
-      requireInteraction: true
+      requireInteraction: true,
+      data: { url: clickUrl }
     });
   });
 }catch(err){ /* بعض المتصفحات لا تدعم Messaging جوه الـ service worker، متجاهلينها بأمان */ }
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+  e.waitUntil(
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(
+        ASSETS.map((url) =>
+          cache.add(url).catch((err) => console.warn('MS SW: failed to cache', url, err))
+        )
+      )
+    )
+  );
 });
 
 self.addEventListener('activate', (e) => {
@@ -80,12 +90,13 @@ self.addEventListener('message', (e) => {
 
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
+  const targetUrl = (e.notification.data && e.notification.data.url) || './index.html';
   e.waitUntil(
     self.clients.matchAll({ type: 'window' }).then((clients) => {
       for (const c of clients) {
         if ('focus' in c) return c.focus();
       }
-      if (self.clients.openWindow) return self.clients.openWindow('./index.html');
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
     })
   );
 });

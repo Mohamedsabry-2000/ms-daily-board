@@ -94,7 +94,8 @@ async function main(){
     const title = dueNow.length === 1 ? '🔔 تذكير' : `🔔 لديك ${dueNow.length} حاجات مستحقة`;
     const body = dueNow.length === 1
       ? `${dueNow[0].task.icon ? dueNow[0].task.icon + ' ' : ''}${dueNow[0].task.title}`
-      : dueNow.slice(0, 3).map(x => '• ' + (x.task.icon ? x.task.icon + ' ' : '') + x.task.title).join('\n');
+      : dueNow.slice(0, 3).map(x => '• ' + (x.task.icon ? x.task.icon + ' ' : '') + x.task.title).join('\n')
+        + (dueNow.length > 3 ? `\n+ ${dueNow.length - 3} تانيين` : '');
 
     try{
       const response = await messaging.sendEachForMulticast({
