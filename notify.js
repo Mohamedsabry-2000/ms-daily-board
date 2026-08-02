@@ -51,6 +51,11 @@ function subtractMinutes(hhmm, minutes){
 async function main(){
   const today = todayStr();
   const currentTime = nowHHMM();
+  const runStart = Date.now();
+  let usersWithDueTasks = 0;
+  let usersWithoutDevices = 0;
+  let totalNotificationsSent = 0;
+  let totalSendFailures = 0;
 
   // بنجيب كل المستخدمين
   const usersSnap = await db.collection('users').get();
@@ -85,11 +90,16 @@ async function main(){
     });
 
     if(dueNow.length === 0) continue;
+    usersWithDueTasks++;
 
     // نجيب أجهزة المستخدم المسجلة للإشعارات
     const devicesSnap = await db.collection('users').doc(uid).collection('devices').get();
     const tokens = devicesSnap.docs.map(d => d.id);
-    if(tokens.length === 0){ console.log(`المستخدم ${uid} معندوش أجهزة مسجلة`); continue; }
+    if(tokens.length === 0){
+      console.log(`المستخدم ${uid} عنده ${dueNow.length} حاجة مستحقة بس معندوش أجهزة مسجلة`);
+      usersWithoutDevices++;
+      continue;
+    }
 
     const title = dueNow.length === 1 ? '🔔 تذكير' : `🔔 لديك ${dueNow.length} حاجات مستحقة`;
     const body = dueNow.length === 1
@@ -107,6 +117,13 @@ async function main(){
         }
       });
       console.log(`اتبعت لـ ${uid}: ${response.successCount} نجح، ${response.failureCount} فشل`);
+      totalNotificationsSent += response.successCount;
+      totalSendFailures += response.failureCount;
+      if(response.failureCount > 0){
+        response.responses.forEach((r, i) => {
+          if(!r.success) console.error(`  فشل للتوكن ${tokens[i].slice(0,15)}...: ${r.error.code} - ${r.error.message}`);
+        });
+      }
 
       // تنظيف التوكنات المنتهية/الغير صالحة
       response.responses.forEach((r, i) => {
@@ -116,6 +133,7 @@ async function main(){
       });
     }catch(err){
       console.error(`فشل الإرسال للمستخدم ${uid}:`, err.message);
+      totalSendFailures += tokens.length;
       continue;
     }
 
@@ -127,7 +145,21 @@ async function main(){
     await batch.commit();
   }
 
-  console.log('خلصت الجولة ✓');
+  // بنسجّل نتيجة الجولة دي في مستند تشخيصي يقدر التطبيق يقرأه ويعرضه
+  await db.collection('system').doc('notifyStatus').set({
+    lastRunAt: admin.firestore.FieldValue.serverTimestamp(),
+    triggeredBy: process.env.GITHUB_EVENT_NAME || 'unknown',
+    usersChecked: usersSnap.size,
+    usersWithDueTasks,
+    usersWithoutDevices,
+    totalNotificationsSent,
+    totalSendFailures,
+    durationMs: Date.now() - runStart
+  });
+
+  console.log('خلصت الجولة ✓', {
+    usersWithDueTasks, usersWithoutDevices, totalNotificationsSent, totalSendFailures
+  });
 }
 
 main().catch(err => {
