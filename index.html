@@ -1348,6 +1348,14 @@ if(firebaseReady){
       document.getElementById('notifyDiagnosticsBtn').style.display = isAdmin ? 'inline-flex' : 'none';
       authGate.style.display = 'none';
       mainWrap.style.display = 'block';
+      // بدون السطر ده، مستند users/{uid} نفسه ميكونش موجود فعليًا في Firestore
+      // (بس الـ subcollections اللي جواه)، فأي سكريبت خلفي بيدور على "كل المستخدمين"
+      // (collection('users').get()) هيلاقي القايمة فاضية دايمًا — وده كان السبب
+      // الحقيقي وراء إن الإشعارات في الخلفية مكنتش بتوصل خالص.
+      firestore.collection('users').doc(user.uid).set({
+        email: user.email || null,
+        lastSeenAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch((err)=> console.error('failed to register user doc', err));
       startTasksListener();
       startSettingsListener();
       startBroadcastListener();
