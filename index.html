@@ -2483,6 +2483,67 @@ function subtractMinutes(hhmm, minutes){
   return String(nh).padStart(2, '0') + ':' + String(nm).padStart(2, '0');
 }
 
+/* ============ ALARM SOUND (بس وإحنا فاتحين اللوحة) ============ */
+let alarmAudioCtx = null;
+let alarmIntervalId = null;
+let alarmActive = false;
+
+function playAlarmSound(){
+  if(alarmActive) return;
+  alarmActive = true;
+  try{
+    alarmAudioCtx = alarmAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = alarmAudioCtx;
+    if(ctx.state === 'suspended') ctx.resume();
+
+    const beepOnce = ()=>{
+      if(!alarmActive) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    };
+
+    beepOnce();
+    setTimeout(beepOnce, 450);
+    alarmIntervalId = setInterval(()=>{
+      beepOnce();
+      setTimeout(beepOnce, 450);
+    }, 1200);
+
+    // بيوقف نفسه لوحده بعد 30 ثانية لو حد نساه من غير ما يوقفه
+    setTimeout(()=> stopAlarmSound(), 30000);
+  }catch(err){ console.error('alarm sound failed', err); alarmActive = false; }
+}
+
+function stopAlarmSound(){
+  alarmActive = false;
+  if(alarmIntervalId){ clearInterval(alarmIntervalId); alarmIntervalId = null; }
+}
+
+function showAlarmToast(msg){
+  const t = document.getElementById('toast');
+  t.innerHTML = '';
+  const span = document.createElement('span');
+  span.textContent = msg;
+  const btn = document.createElement('button');
+  btn.textContent = '🔕 وقف الصوت';
+  btn.className = 'toast-undo-btn';
+  btn.addEventListener('click', ()=>{
+    stopAlarmSound();
+    t.classList.remove('show');
+  });
+  t.appendChild(span);
+  t.appendChild(btn);
+  t.classList.add('show');
+}
+
 async function checkReminders(tasks){
   const today = todayStr();
   const currentTime = nowHHMM();
@@ -2502,7 +2563,8 @@ async function checkReminders(tasks){
   });
   if(due.length === 0) return;
 
-  showToast(`لديك ${due.length} مهمة مستحقة الآن`);
+  showAlarmToast(`لديك ${due.length} مهمة مستحقة الآن`);
+  playAlarmSound();
   notifyUser('تذكير من لوحتك', `لديك ${due.length} مهمة مستحقة الآن`, 'ms-daily-due');
 
   for(const t of due){

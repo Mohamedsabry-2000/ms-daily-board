@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ms-tasks-v32';
+const CACHE_NAME = 'ms-tasks-v33';
 const ASSETS = [
   './index.html', './manifest.json', './icon-192.png', './icon-512.png', './logo-header.png',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
@@ -34,7 +34,7 @@ try{
       lang: 'ar',
       tag: 'ms-fcm-reminder',
       renotify: true,
-      vibrate: [200, 100, 200],
+      vibrate: [300, 150, 300, 150, 300, 150, 300],
       requireInteraction: true,
       data: { url: clickUrl }
     });
@@ -82,7 +82,7 @@ self.addEventListener('message', (e) => {
       dir: 'rtl',
       lang: 'ar',
       renotify: true,
-      vibrate: [200, 100, 200],
+      vibrate: [300, 150, 300, 150, 300, 150, 300],
       requireInteraction: true
     });
   }
