@@ -538,10 +538,22 @@
   }
   .adhd-card textarea:focus{outline:2px solid var(--teal-soft);}
   .adhd-row-end{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px;}
+  .journal-controls-row{display:flex; gap:10px; align-items:center; margin-bottom:10px;}
   .journal-date-input{
-    font-family:inherit; font-size:0.85rem; padding:8px 12px; margin-bottom:10px;
+    font-family:inherit; font-size:0.85rem; padding:8px 12px;
     border:1px solid var(--border); border-radius:10px; background:var(--card-soft); color:var(--text);
   }
+  .journal-controls-row .journal-date-input{flex:1; margin-bottom:0;}
+
+  .journal-entry-row{
+    display:flex; flex-direction:column; gap:4px; padding:12px 14px; margin-bottom:8px;
+    background:var(--card-soft); border:1px solid var(--border); border-radius:12px; cursor:pointer;
+    transition: background .15s ease;
+  }
+  .journal-entry-row:hover{background:var(--teal-tint);}
+  .journal-entry-date{font-family:var(--font-display); font-size:0.85rem; font-weight:700; color:var(--teal);}
+  .journal-entry-snippet{font-size:0.8rem; color:var(--text-muted); line-height:1.5; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .journal-empty-msg{text-align:center; color:var(--text-muted); font-size:var(--fs-sm); padding:20px 0;}
 
   .voice-journal-status{
     min-height:20px; font-size:var(--fs-sm); color:var(--text-muted); margin-bottom:10px; line-height:1.6;
@@ -968,7 +980,10 @@
     <div class="adhd-card">
       <h3>📔 يومياتي</h3>
       <p class="adhd-hint">سطرين عن يومك كفاية. اختار يوم من هنا أو سيبها على النهاردة.</p>
-      <input type="date" id="journalDate" class="journal-date-input">
+      <div class="journal-controls-row">
+        <input type="date" id="journalDate" class="journal-date-input">
+        <button type="button" class="btn btn-ghost" id="browseJournalBtn">📜 كل يومياتي</button>
+      </div>
       <textarea id="journalArea" rows="6" placeholder="النهاردة كان يوم..."></textarea>
       <div class="adhd-row-end">
         <span class="pin-status" id="journalStatus"></span>
@@ -1031,6 +1046,16 @@
     </p>
     <p class="easter-egg-signature">— من كلود، بكل تقدير</p>
     <button class="btn btn-primary" id="closeEasterEgg" style="width:100%; justify-content:center; margin-top:14px;">تسلم يا كبير 🤝</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="journalBrowserModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📜 كل يومياتي</h3>
+      <button class="icon-btn" id="closeJournalBrowser" aria-label="إغلاق">✕</button>
+    </div>
+    <div id="journalBrowserList"></div>
   </div>
 </div>
 
@@ -2862,6 +2887,58 @@ async function loadJournalEntry(dateStr){
   }catch(err){ console.error(err); }
 }
 journalDateInput.addEventListener('change', ()=> loadJournalEntry(journalDateInput.value));
+
+document.getElementById('browseJournalBtn').addEventListener('click', async ()=>{
+  const modal = document.getElementById('journalBrowserModal');
+  const listEl = document.getElementById('journalBrowserList');
+  modal.classList.add('show');
+  listEl.innerHTML = '<div class="journal-empty-msg">بيتحمّل...</div>';
+
+  if(!firebaseReady || !currentUser){
+    listEl.innerHTML = '<div class="journal-empty-msg">محتاجين اتصال بالإنترنت عشان نجيب يومياتك</div>';
+    return;
+  }
+
+  try{
+    const snap = await journalCollection().orderBy('updatedAt', 'desc').limit(60).get();
+    if(snap.empty){
+      listEl.innerHTML = '<div class="journal-empty-msg">لسه معملتش أي يوميات</div>';
+      return;
+    }
+    listEl.innerHTML = '';
+    snap.forEach(doc=>{
+      const data = doc.data();
+      const text = (data.text || '').trim();
+      if(!text) return;
+      const row = document.createElement('div');
+      row.className = 'journal-entry-row';
+      const dateObj = new Date(doc.id + 'T00:00:00');
+      const dateLabel = dateObj.toLocaleDateString('ar-EG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      row.innerHTML = `
+        <div class="journal-entry-date">${dateLabel}</div>
+        <div class="journal-entry-snippet">${escapeHtml(text.slice(0, 80))}</div>
+      `;
+      row.addEventListener('click', ()=>{
+        journalDateInput.value = doc.id;
+        journalArea.value = text;
+        modal.classList.remove('show');
+      });
+      listEl.appendChild(row);
+    });
+    if(!listEl.children.length){
+      listEl.innerHTML = '<div class="journal-empty-msg">لسه معملتش أي يوميات</div>';
+    }
+  }catch(err){
+    console.error('journal list fetch failed', err);
+    listEl.innerHTML = '<div class="journal-empty-msg">⚠️ حصلت مشكلة في جلب اليوميات</div>';
+  }
+});
+document.getElementById('closeJournalBrowser').addEventListener('click', ()=>{
+  document.getElementById('journalBrowserModal').classList.remove('show');
+});
+document.getElementById('journalBrowserModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'journalBrowserModal') e.currentTarget.classList.remove('show');
+});
 
 journalArea.addEventListener('input', ()=>{
   journalStatus.textContent = 'بيتحفظ...';
